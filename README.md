@@ -65,7 +65,7 @@ The model tracks **two lumped thermal capacitances** connected by a fluid loop:
 Rather than a fixed irradiance, $G$ is computed from the simulated time of day using a **half-sine bell curve** centred on solar noon:
 
 $$
-G(t) = G_\text{peak} \cdot \max\!\Bigl(0,\\sin\!\Bigl(\pi\,\frac{h(t) - h_\text{rise}}{h_\text{day}}\Bigr)\Bigr)
+G(t) = G_\text{peak} \cdot \max\\Bigl(0,\\sin\\Bigl(\pi\,\frac{h(t) - h_\text{rise}}{h_\text{day}}\Bigr)\Bigr)
 $$
 
 where the hour of day $h(t)$ and derived quantities are:
@@ -171,7 +171,7 @@ where $C_\text{tank} = \rho \, c_w \, V_\text{tank}$ is the thermal mass of the 
 $R_m$ (K·m/W) is the thermal resistance per unit length of the insulated pipe, composed of a cylindrical insulation layer and outer surface convection:
 
 $$
-R_m = \underbrace{\frac{\ln\!\bigl((r+t_\text{ins})/r\bigr)}{2\pi\,k_\text{ins}}}_{\text{insulation}} + \underbrace{\frac{1}{2\pi\,(r+t_\text{ins})\,h_\text{out}}}_{\text{outer convection}}
+R_m = \underbrace{\frac{\ln\bigl((r+t_\text{ins})/r\bigr)}{2\pi\,k_\text{ins}}}_{\text{insulation}} + \underbrace{\frac{1}{2\pi\,(r+t_\text{ins})\,h_\text{out}}}_{\text{outer convection}}
 $$
 
 where $r = 0.011$ m (22 mm OD copper), $k_\text{ins} = 0.040$ W/(m·K) (elastomeric foam), $h_\text{out} = 10$ W/(m²·K) (natural convection on the outer surface). At 25 mm insulation this gives $R_m \approx 5.2$ K·m/W, i.e. **≈ 10.6 W/m** at $\Delta T = 55$ °C — consistent with the Engineering Toolbox reference range of 8–19 W/m for 22–76 mm pipe sizes.
@@ -299,7 +299,7 @@ While this MVP performs well as a simplified physical model with basic data visu
 
 ## AI Usage Disclosure
 
-Generative AI was used in this project for the creation of this README.md, code documentation, and portions of the code, particularly in the physics simulation engine. To be specific, gen. AI was most utilized in the ε–NTU heat transfer formulation. All code, documentation, and this README.md has been verified and tested by a human (me). AI did NOT make architecture decisions for the code or project structure, nor did it make choices about dependencies, tools, or frameworks being used.
+Generative AI was used in this project for the creation of this README.md ([Future Work](#future-work) and this section had no AI usage), code documentation, and portions of the code, particularly in the physics simulation engine. To be specific, gen. AI was most utilized in the ε–NTU heat transfer formulation. All code, documentation, and this README.md has been verified and tested by a human (me). AI did NOT make architecture decisions for the code or project structure, nor did it make choices about dependencies, tools, or frameworks being used.
 
 ## License
 
