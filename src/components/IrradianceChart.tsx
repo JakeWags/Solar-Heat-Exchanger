@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import embed, { type VisualizationSpec } from 'vega-embed';
 import * as vega from 'vega';
 import { useSimStore } from '../store';
-import type { Snapshot } from '../types';
 import { LTTB } from 'downsample';
 
 type Props = { width?: number; height?: number };
@@ -45,11 +44,10 @@ function buildSpec(width: number, height: number, xTitle: string): Visualization
   };
 }
 
-function buildRows(snapshots: Snapshot[], divisor: number): Row[] {
-  const pts = new Array<[number, number]>(snapshots.length);
-  for (let i = 0; i < snapshots.length; i++) {
-    pts[i] = [snapshots[i].t / divisor, snapshots[i].G];
-  }
+function buildRows(t_arr: Float32Array, G_arr: Float32Array, divisor: number): Row[] {
+  const n   = t_arr.length;
+  const pts = new Array<[number, number]>(n);
+  for (let i = 0; i < n; i++) pts[i] = [t_arr[i] / divisor, G_arr[i]];
   return (LTTB(pts, DOWNSAMPLE_THRESHOLD) as [number, number][]).map(
     ([t, G]) => ({ t: +t.toFixed(4), G: +G.toFixed(1) }),
   );
@@ -73,16 +71,16 @@ export default function IrradianceChart({ width = 640, height = 180 }: Props) {
   }, []);
 
   useEffect(() => {
-    const snapshots = useSimStore.getState().snapshots;
-    if (!vegaRef.current || snapshots.length === 0) return;
+    const ss = useSimStore.getState().snapshots;
+    if (!vegaRef.current || ss.length === 0) return;
 
-    const maxT    = snapshots[snapshots.length - 1].t;
+    const t_arr   = ss.t;
+    const maxT    = t_arr[ss.length - 1];
     const newUnit = getTimeUnit(maxT);
     const divisor = DIVISOR[newUnit];
 
     if (newUnit !== unitRef.current) {
       unitRef.current       = newUnit;
-      lastRebuildAt.current = snapshots.length;
       vegaRef.current.finalize();
       vegaRef.current = null;
       if (containerRef.current) {
@@ -90,22 +88,22 @@ export default function IrradianceChart({ width = 640, height = 180 }: Props) {
           actions: false, renderer: 'canvas',
         }).then(res => {
           vegaRef.current = res;
-          res.view.data('table', buildRows(snapshots, divisor)).run();
+          lastRebuildAt.current = ss.length;
+          res.view.data('table', buildRows(t_arr, ss.G, divisor)).run();
         });
       }
       return;
     }
 
-    const sinceRebuild = snapshots.length - lastRebuildAt.current;
-    if (sinceRebuild >= FULL_REBUILD_INTERVAL) {
-      lastRebuildAt.current = snapshots.length;
-      vegaRef.current.view.data('table', buildRows(snapshots, divisor)).run();
+    if (ss.length - lastRebuildAt.current >= FULL_REBUILD_INTERVAL) {
+      lastRebuildAt.current = ss.length;
+      vegaRef.current.view.data('table', buildRows(t_arr, ss.G, divisor)).run();
       return;
     }
 
-    // Incremental insert for the hot path
-    const s  = snapshots[snapshots.length - 1];
-    const cs = vega.changeset().insert([{ t: +(s.t / divisor).toFixed(4), G: +s.G.toFixed(1) }]);
+    // O(1) incremental insert for the hot path
+    const i  = ss.length - 1;
+    const cs = vega.changeset().insert([{ t: +(t_arr[i] / divisor).toFixed(4), G: +ss.G[i].toFixed(1) }]);
     vegaRef.current.view.change('table', cs).run();
 
   }, [renderTick, width, height]);

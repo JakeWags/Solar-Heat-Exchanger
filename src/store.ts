@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import type { Params, State, Snapshot } from './types';
+import type { Params, State } from './types';
+import { SnapshotStore } from './snapshotStore';
 
 export type SimStore = {
   params: Params;
@@ -7,10 +8,11 @@ export type SimStore = {
   running: boolean;
   speed: number;
   /**
-   * Mutable snapshot array — lives outside Zustand reactive state to avoid re-renders on every push.
-   * Pushed once per chart tick (~10 fps) so memory stays proportional to sim duration, not frame count.
+   * SoA snapshot store backed by Float32Arrays.
+   * Lives outside Zustand reactive state — mutations never trigger re-renders.
+   * Pushed once per chart tick (~10 fps); O(1) clear on reset.
    */
-  snapshots: Snapshot[];
+  snapshots: SnapshotStore;
   /** Incremented at ~10 fps to signal charts to redraw. */
   renderTick: number;
   bumpRenderTick: () => void;
@@ -60,8 +62,8 @@ export const useSimStore = create<SimStore>((set) => ({
   },
   running: true,
   speed: 8,
-  // Shared mutable array — mutations do NOT trigger Zustand re-renders
-  snapshots: [] as Snapshot[],
+  // SoA store — mutations do NOT trigger Zustand re-renders
+  snapshots: new SnapshotStore(),
   renderTick: 0,
   bumpRenderTick: () => set((st) => ({ renderTick: st.renderTick + 1 })),
   setParams: (fn) => set((st) => ({ params: fn(st.params) })),
@@ -69,7 +71,7 @@ export const useSimStore = create<SimStore>((set) => ({
   toggle: () => set((st) => ({ running: !st.running })),
   setSpeed: (v) => set({ speed: v }),
   reset: () => {
-    useSimStore.getState().snapshots.splice(0);
+    useSimStore.getState().snapshots.clear();   // O(1) — just resets length counter
     set({ state: { T_panel: 20, T_tank: 20, t: 0, E_harvest: 0 }, renderTick: 0 });
   },
 }));

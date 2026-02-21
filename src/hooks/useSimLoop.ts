@@ -26,7 +26,7 @@ export function useSimLoop() {
       const { running, speed, params, snapshots } = store;
 
       if (running) {
-        // ── Physics: pure computation, touches no React state ──────────────────
+        // -- Physics: pure computation, touches no React state ------------------
         let s = store.state;
         let lastTOut = s.T_panel;
         for (let i = 0; i < speed; i++) {
@@ -38,17 +38,11 @@ export function useSimLoop() {
         // Lightweight state update — only 4 numbers, minimal subscriber cost
         store.setState(() => s);
 
-        // ── Chart throttle: push one snapshot + trigger Vega redraw at ~10 fps ─
+        // -- Chart throttle: push one snapshot + trigger Vega redraw at ~10 fps -
         if (wallTime - lastChartUpdate.current >= CHART_FPS_MS) {
           lastChartUpdate.current = wallTime;
-          // One snapshot per chart tick (not per frame) keeps memory O(sim_duration / 100ms)
-          snapshots.push({
-            t: s.t,
-            T_panel: s.T_panel,
-            T_tank: s.T_tank,
-            T_out_panel: lastTOut,
-            G: computeSolarG(s.t, params),
-          });
+          // SoA push — 5 scalar writes, zero object allocation
+          snapshots.push(s.t, s.T_panel, s.T_tank, lastTOut, computeSolarG(s.t, params));
           store.bumpRenderTick();
         }
       }

@@ -27,7 +27,7 @@ export default function App() {
       navbar={{ width: 320, breakpoint: 'sm' }}
       padding="md"
     >
-      {/* ─── Sidebar ─── */}
+      {/* --- Sidebar --- */}
       <AppShell.Navbar p="md">
         <AppShell.Section>
           <Title order={4} mb="sm">
@@ -53,7 +53,7 @@ export default function App() {
         </AppShell.Section>
       </AppShell.Navbar>
 
-      {/* ─── Main content ─── */}
+      {/* --- Main content --- */}
       <AppShell.Main>
         <Stack gap="md">
           <StatusBar />
