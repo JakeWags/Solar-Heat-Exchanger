@@ -2,8 +2,6 @@ import type { Params, State } from './types';
 import { stepDerivatives } from './physics';
 
 // -- Module-level scratch objects — allocated once, mutated in-place each step.
-// Eliminates ~3 short-lived heap objects per rk4Step call; at speed=64 that is
-// 192 objects/frame saved from GC, removing measurable pauses on long runs.
 const _s2: State = { T_panel: 0, T_tank: 0, t: 0, E_harvest: 0 };
 const _s3: State = { T_panel: 0, T_tank: 0, t: 0, E_harvest: 0 };
 const _s4: State = { T_panel: 0, T_tank: 0, t: 0, E_harvest: 0 };

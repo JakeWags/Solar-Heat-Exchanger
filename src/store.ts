@@ -56,7 +56,7 @@ export const useSimStore = create<SimStore>((set) => ({
     pipe_insulation_mm: 25,  // mm (25 mm = 1 inch, standard elastomeric foam)
 
     // Integrator
-    dt: 0.25,                // s
+    dt: 5.0,                // s
   },
   state: {
     T_panel: 20,             // °C initial
@@ -64,8 +64,8 @@ export const useSimStore = create<SimStore>((set) => ({
     t: 0,
     E_harvest: 0,
   },
-  running: true,
-  speed: 8,
+  running: false,
+  speed: 64,
   // SoA store — mutations do NOT trigger Zustand re-renders
   snapshots: new SnapshotStore(),
   renderTick: 0,
