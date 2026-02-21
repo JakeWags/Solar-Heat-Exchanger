@@ -207,7 +207,6 @@ describe('ε–NTU panel heat pickup', () => {
   const T_tank  = 30;
 
   const p = makeParams({
-    T_panel: undefined as never,   // unused — comes from State
     T_env: 20,
     m_dot: 0.05,
     c_w: 4181,
