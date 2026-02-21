@@ -23,6 +23,7 @@ A real-time, browser-based simulation of a **flat-plate solar thermal collector*
   - [Parameter Reference](#parameter-reference)
   - [Project Structure](#project-structure)
     - [Key design decisions](#key-design-decisions)
+  - [AI Usage Disclosure](#ai-usage-disclosure)
   - [License](#license)
 
 ---
@@ -281,6 +282,10 @@ src/
 - **vega-embed** over a React charting library — Vega-Lite specs are declarative and portable data is swapped in-place each frame for performance.
 
 ---
+
+## AI Usage Disclosure
+
+Generative AI was used in this project for the creation of this README.md, code documentation, and portions of the code, particularly in the physics simulation engine. To be specific, gen. AI was most utilied in the ε–NTU formulation. All code, documentation, and this README.md has been verfied and tested by a human (me). AI did NOT make architecture decisions for the code or project structure, nor did it make choices about dependencies, tools, or frameworks being used.
 
 ## License
 
