@@ -285,7 +285,7 @@ src/
 
 ## AI Usage Disclosure
 
-Generative AI was used in this project for the creation of this README.md, code documentation, and portions of the code, particularly in the physics simulation engine. To be specific, gen. AI was most utilied in the ε–NTU formulation. All code, documentation, and this README.md has been verfied and tested by a human (me). AI did NOT make architecture decisions for the code or project structure, nor did it make choices about dependencies, tools, or frameworks being used.
+Generative AI was used in this project for the creation of this README.md, code documentation, and portions of the code, particularly in the physics simulation engine. To be specific, gen. AI was most utilized in the ε–NTU heat transfer formulation. All code, documentation, and this README.md has been verified and tested by a human (me). AI did NOT make architecture decisions for the code or project structure, nor did it make choices about dependencies, tools, or frameworks being used.
 
 ## License
 
