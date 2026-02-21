@@ -24,7 +24,7 @@ export default function App() {
 
   return (
     <AppShell
-      navbar={{ width: 320, breakpoint: 'sm' }}
+      navbar={{ width: 450, breakpoint: 'sm' }}
       padding="md"
     >
       {/* --- Sidebar --- */}
@@ -48,7 +48,7 @@ export default function App() {
           </Group>
         </AppShell.Section>
 
-        <AppShell.Section grow component={ScrollArea} type="auto">
+        <AppShell.Section grow component={ScrollArea} type="auto" offsetScrollbars pr={4}>
           <Controls />
         </AppShell.Section>
       </AppShell.Navbar>
