@@ -1,39 +1,56 @@
 import { useEffect, useRef } from 'react';
 import { useSimStore } from '../store';
 import { rk4Step } from '../simulate';
+import { computeSolarG } from '../physics';
+
+/** Chart redraws are throttled to this interval (ms) to avoid Vega flooding. */
+const CHART_FPS_MS = 100; // ~10 fps
 
 /**
  * Drives the simulation forward using requestAnimationFrame.
- * Each animation frame advances `speed` RK4 steps and pushes one snapshot.
+ * Physics runs every frame; React state is only touched for the lightweight
+ * state object. Charts redraw at ~10 fps via a renderTick counter.
  */
 export function useSimLoop() {
   const rafId = useRef<number>(0);
+  const lastChartUpdate = useRef<number>(0);
 
   useEffect(() => {
     let mounted = true;
 
-    const tick = () => {
+    const tick = (wallTime: number) => {
       if (!mounted) return;
 
-      const { running, speed, params, state, setState, pushSnapshot } =
-        useSimStore.getState();
+      // Read store state without subscribing — no React re-render triggered here
+      const store = useSimStore.getState();
+      const { running, speed, params, snapshots } = store;
 
       if (running) {
-        let s = state;
+        // ── Physics: pure computation, touches no React state ──────────────────
+        let s = store.state;
         let lastTOut = s.T_panel;
         for (let i = 0; i < speed; i++) {
           const { next, T_out_panel } = rk4Step(s, params);
           s = next;
           lastTOut = T_out_panel;
         }
-        setState(() => s);
-        pushSnapshot({
-          t: s.t,
-          T_panel: s.T_panel,
-          T_tank: s.T_tank,
-          T_out_panel: lastTOut,
-          G: params.G,
-        });
+
+        // Lightweight state update — only 4 numbers, minimal subscriber cost
+        store.setState(() => s);
+
+        // ── Chart throttle: push one snapshot + trigger Vega redraw at ~10 fps ─
+        if (wallTime - lastChartUpdate.current >= CHART_FPS_MS) {
+          lastChartUpdate.current = wallTime;
+          // One snapshot per chart tick (not per frame) keeps memory O(sim_duration / 100ms)
+          snapshots.push({
+            t: s.t,
+            T_panel: s.T_panel,
+            T_tank: s.T_tank,
+            T_out_panel: lastTOut,
+            G: computeSolarG(s.t, params),
+          });
+          store.bumpRenderTick();
+        }
       }
 
       rafId.current = requestAnimationFrame(tick);

@@ -62,24 +62,26 @@ export default function Controls() {
         Environment
       </Text>
       <ParamSlider label="Ambient Temp" paramKey="T_env" min={-10} max={45} step={0.5} unit="°C" />
-      <ParamSlider label="Solar Irradiance" paramKey="G" min={0} max={1200} step={10} unit="W/m²" />
+      <ParamSlider label="Peak Irradiance" paramKey="G_peak" min={0} max={1400} step={10} unit="W/m²" />
       <ParamSlider label="Absorptivity α" paramKey="alpha" min={0} max={1} step={0.01} unit="" />
+      <ParamSlider label="Start Hour" paramKey="t_start_hour" min={0} max={12} step={0.25} unit="h" />
+      <ParamSlider label="Daylight Hours" paramKey="daylight_hours" min={4} max={18} step={0.25} unit="h" />
 
       <Divider my={4} />
       <Text fw={700} size="sm" tt="uppercase" c="dimmed">
         Panel
       </Text>
       <ParamSlider label="Panel Area" paramKey="A_p" min={0.5} max={10} step={0.1} unit="m²" />
-      <ParamSlider label="U_loss (panel→env)" paramKey="U_loss_p" min={0.5} max={20} step={0.5} unit="W/(m²·K)" />
-      <ParamSlider label="UA panel→fluid" paramKey="UA_pf" min={10} max={500} step={5} unit="W/K" />
-      <ParamSlider label="Panel Heat Capacity" paramKey="C_panel" min={1000} max={100000} step={500} unit="J/K" />
+      <ParamSlider label="U_loss (panel→env)" paramKey="U_loss_p" min={0.5} max={20} step={0.5} unit="W/(m²·C)" />
+      <ParamSlider label="UA panel→fluid" paramKey="UA_pf" min={10} max={500} step={5} unit="W/C" />
+      <ParamSlider label="Panel Heat Capacity" paramKey="C_panel" min={1000} max={100000} step={500} unit="J/C" />
 
       <Divider my={4} />
       <Text fw={700} size="sm" tt="uppercase" c="dimmed">
         Tank
       </Text>
       <ParamSlider label="Tank Volume" paramKey="V_tank" min={0.02} max={1.0} step={0.01} unit="m³" />
-      <ParamSlider label="UA tank→env" paramKey="UA_tank" min={0.5} max={30} step={0.5} unit="W/K" />
+      <ParamSlider label="UA tank→env" paramKey="UA_tank" min={0.5} max={30} step={0.5} unit="W/C" />
 
       <Divider my={4} />
       <Text fw={700} size="sm" tt="uppercase" c="dimmed">

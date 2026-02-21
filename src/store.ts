@@ -5,13 +5,19 @@ export type SimStore = {
   params: Params;
   state: State;
   running: boolean;
-  speed: number; // sim steps per render tick multiplier
-  history: Snapshot[];
+  speed: number;
+  /**
+   * Mutable snapshot array — lives outside Zustand reactive state to avoid re-renders on every push.
+   * Pushed once per chart tick (~10 fps) so memory stays proportional to sim duration, not frame count.
+   */
+  snapshots: Snapshot[];
+  /** Incremented at ~10 fps to signal charts to redraw. */
+  renderTick: number;
+  bumpRenderTick: () => void;
   setParams: (fn: (p: Params) => Params) => void;
   setState: (fn: (s: State) => State) => void;
   toggle: () => void;
   reset: () => void;
-  pushSnapshot: (snap: Snapshot) => void;
   setSpeed: (v: number) => void;
 };
 
@@ -21,23 +27,27 @@ export const useSimStore = create<SimStore>((set) => ({
   params: {
     // Environment
     T_env: DEG_C,            // °C
-    G: 800,                  // W/m²
+    G_peak: 1000,            // W/m² (peak irradiance at solar noon)
     alpha: 0.9,
+
+    // Solar time
+    t_start_hour: 6.0,       // sim starts at 6:00 am
+    daylight_hours: 12.0,    // sunrise 06:00, sunset 18:00
 
     // Panel
     A_p: 2.0,                // m²
-    U_loss_p: 5.0,           // W/(m²·K)
-    UA_pf: 120.0,            // W/K
-    C_panel: 20_000.0,       // J/K (approx metal mass ~5 kg * 380 J/kgK)
+    U_loss_p: 5.0,           // W/(m²·C)
+    UA_pf: 120.0,            // W/C
+    C_panel: 20_000.0,       // J/C (approx metal mass ~5 kg * 380 J/kgC)
 
     // Tank
     V_tank: 0.2,             // m³ (200 L)
-    UA_tank: 8.0,            // W/K
+    UA_tank: 8.0,            // W/C
 
     // Fluid
     m_dot: 0.05,             // kg/s (~3 L/min)
     rho: 997.0,              // kg/m³
-    c_w: 4181.0,             // J/(kg·K)
+    c_w: 4181.0,             // J/(kg·C)
 
     // Integrator
     dt: 0.25,                // s
@@ -50,14 +60,16 @@ export const useSimStore = create<SimStore>((set) => ({
   },
   running: true,
   speed: 8,
-  history: [],
+  // Shared mutable array — mutations do NOT trigger Zustand re-renders
+  snapshots: [] as Snapshot[],
+  renderTick: 0,
+  bumpRenderTick: () => set((st) => ({ renderTick: st.renderTick + 1 })),
   setParams: (fn) => set((st) => ({ params: fn(st.params) })),
   setState: (fn) => set((st) => ({ state: fn(st.state) })),
   toggle: () => set((st) => ({ running: !st.running })),
   setSpeed: (v) => set({ speed: v }),
-  reset: () => set({
-    state: { T_panel: 20, T_tank: 20, t: 0, E_harvest: 0 },
-    history: [],
-  }),
-  pushSnapshot: (snap) => set((st) => ({ history: [...st.history, snap].slice(-2000) })),
+  reset: () => {
+    useSimStore.getState().snapshots.splice(0);
+    set({ state: { T_panel: 20, T_tank: 20, t: 0, E_harvest: 0 }, renderTick: 0 });
+  },
 }));

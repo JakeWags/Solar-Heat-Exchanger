@@ -6,14 +6,23 @@ A real-time, browser-based simulation of a **flat-plate solar thermal collector*
 
 ## Table of Contents
 
-1. [Quick Start](#quick-start)
-2. [Physical System Overview](#physical-system-overview)
-3. [Governing Equations](#governing-equations)
-4. [Heat-Exchanger Effectiveness (ε–NTU)](#heat-exchanger-effectiveness-ε-ntu)
-5. [Numerical Method — RK4](#numerical-method--rk4)
-6. [Parameter Reference](#parameter-reference)
-7. [Project Structure](#project-structure)
-8. [License](#license)
+- [Solar Thermal Panel Simulator](#solar-thermal-panel-simulator)
+  - [Table of Contents](#table-of-contents)
+  - [Quick Start](#quick-start)
+  - [Physical System Overview](#physical-system-overview)
+    - [Key simplifications (the "lumped-capacitance" approach)](#key-simplifications-the-lumped-capacitance-approach)
+  - [Governing Equations](#governing-equations)
+    - [1. Panel energy balance](#1-panel-energy-balance)
+    - [2. Fluid heat pickup](#2-fluid-heat-pickup)
+    - [3. Tank energy balance](#3-tank-energy-balance)
+  - [Heat-Exchanger Effectiveness (ε–NTU)](#heat-exchanger-effectiveness-εntu)
+    - [Why ε–NTU?](#why-εntu)
+    - [Outlet temperature](#outlet-temperature)
+  - [Numerical Method — RK4](#numerical-method--rk4)
+  - [Parameter Reference](#parameter-reference)
+  - [Project Structure](#project-structure)
+    - [Key design decisions](#key-design-decisions)
+  - [License](#license)
 
 ---
 
@@ -64,6 +73,36 @@ The model tracks **two lumped thermal capacitances** connected by a fluid loop:
 
 ---
 
+## Solar Irradiance Model
+
+Rather than a fixed irradiance, $G$ is computed from the simulated time of day using a **half-sine bell curve** centred on solar noon:
+
+$$
+G(t) = G_\text{peak} \cdot \max\!\Bigl(0,\;\sin\!\Bigl(\pi\,\frac{h(t) - h_\text{rise}}{h_\text{day}}\Bigr)\Bigr)
+$$
+
+where the hour of day $h(t)$ and derived quantities are:
+
+$$
+h(t) = h_\text{start} + \frac{t}{3600}
+\qquad
+h_\text{rise} = 12 - \frac{h_\text{day}}{2}
+\qquad
+h_\text{set} = 12 + \frac{h_\text{day}}{2}
+$$
+
+$G = 0$ outside $[h_\text{rise},\, h_\text{set}]$. Solar noon is always at 12:00. This gives a symmetric peak that qualitatively matches measured global horizontal irradiance on a clear day.
+
+| Parameter | Symbol | Default | Meaning |
+|-----------|--------|---------|--------|
+| Peak irradiance | $G_\text{peak}$ | 1000 W/m² | Clear-sky AM1.5 |
+| Start hour | $h_\text{start}$ | 6 | 6 am |
+| Daylight hours | $h_\text{day}$ | 12 | 6 am – 6 pm |
+
+You can drag the **Start Hour** slider to position the simulation at any time of day (e.g. start at 10:00 to see the panel ramp up quickly toward noon).
+
+---
+
 ## Governing Equations
 
 ### 1. Panel energy balance
@@ -81,11 +120,11 @@ where
 
 | Symbol | Meaning |
 |--------|---------|
-| $C_\text{panel}$ | lumped heat capacity of the absorber (J/K) |
+| $C_\text{panel}$ | lumped heat capacity of the absorber (J/C) |
 | $\alpha$ | short-wave absorptivity of the selective coating (0–1) |
 | $A_p$ | collector aperture area (m²) |
 | $G$ | global solar irradiance on the tilted surface (W/m²) |
-| $U_{\text{loss},p}$ | overall heat-loss coefficient, panel → ambient (W/(m²·K)) |
+| $U_{\text{loss},p}$ | overall heat-loss coefficient, panel → ambient (W/(m²·C)) |
 | $T_\text{env}$ | ambient air temperature (°C) |
 
 ### 2. Fluid heat pickup
@@ -118,7 +157,7 @@ Rather than solving the spatial temperature profile inside the collector tubes, 
 
 ### Why ε–NTU?
 
-When fluid flows through a heat exchanger of known conductance $UA_\text{pf}$ (W/K), the maximum possible heat transfer is:
+When fluid flows through a heat exchanger of known conductance $UA_\text{pf}$ (W/C), the maximum possible heat transfer is:
 
 $$
 Q_\text{max} = \dot{C} \,(T_\text{panel} - T_\text{in})
@@ -185,17 +224,20 @@ where $Q_i$ is the instantaneous $Q_\text{to fluid}$ at RK4 stage $i$.
 | Parameter | Symbol | Default | Units | Description |
 |-----------|--------|---------|-------|-------------|
 | Ambient temperature | $T_\text{env}$ | 20 | °C | Surrounding air temperature |
-| Solar irradiance | $G$ | 800 | W/m² | Incident radiation on tilted panel |
+| Solar irradiance | $G$ | computed | W/m² | Instantaneous irradiance from solar curve |
+| Peak irradiance | $G_\text{peak}$ | 1000 | W/m² | Irradiance at solar noon |
+| Sim start hour | $h_\text{start}$ | 6.0 | h | Hour of day when t = 0 (e.g. 6 = 6 am) |
+| Daylight hours | $h_\text{day}$ | 12.0 | h | Total hours from sunrise to sunset |
 | Absorptivity | $\alpha$ | 0.9 | — | Fraction of incident solar radiation absorbed |
 | Panel area | $A_p$ | 2.0 | m² | Collector aperture area |
-| Panel loss coeff | $U_{\text{loss},p}$ | 5.0 | W/(m²·K) | Combined convective + radiative loss |
-| Panel–fluid conductance | $UA_\text{pf}$ | 120 | W/K | Thermal coupling between plate and fluid |
-| Panel heat capacity | $C_\text{panel}$ | 20 000 | J/K | Lumped thermal mass (~5 kg copper × 380 J/kg·K) |
+| Panel loss coeff | $U_{\text{loss},p}$ | 5.0 | W/(m²·C) | Combined convective + radiative loss |
+| Panel–fluid conductance | $UA_\text{pf}$ | 120 | W/C | Thermal coupling between plate and fluid |
+| Panel heat capacity | $C_\text{panel}$ | 20 000 | J/C | Lumped thermal mass (~5 kg copper × 380 J/kg·C) |
 | Tank volume | $V_\text{tank}$ | 0.2 | m³ | 200 L storage tank |
-| Tank loss coeff | $UA_\text{tank}$ | 8.0 | W/K | Heat loss from tank to ambient |
+| Tank loss coeff | $UA_\text{tank}$ | 8.0 | W/C | Heat loss from tank to ambient |
 | Mass flow rate | $\dot{m}$ | 0.05 | kg/s | Circulating pump flow (~3 L/min) |
 | Water density | $\rho$ | 997 | kg/m³ | At ~25 °C |
-| Specific heat | $c_w$ | 4181 | J/(kg·K) | Water at ~25 °C |
+| Specific heat | $c_w$ | 4181 | J/(kg·C) | Water at ~25 °C |
 | Time step | $\Delta t$ | 0.25 | s | RK4 integration step |
 
 ---

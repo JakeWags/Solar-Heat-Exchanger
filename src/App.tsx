@@ -21,7 +21,6 @@ export default function App() {
   const running = useSimStore((s) => s.running);
   const toggle = useSimStore((s) => s.toggle);
   const reset = useSimStore((s) => s.reset);
-  const history = useSimStore((s) => s.history);
 
   return (
     <AppShell
@@ -63,14 +62,14 @@ export default function App() {
             <Text size="sm" fw={600} mb="xs">
               Temperature Traces
             </Text>
-            <TempChart history={history} />
+            <TempChart />
           </Paper>
 
           <Paper p="md" radius="md" withBorder>
             <Text size="sm" fw={600} mb="xs">
               Solar Irradiance
             </Text>
-            <IrradianceChart history={history} />
+            <IrradianceChart />
           </Paper>
         </Stack>
       </AppShell.Main>
