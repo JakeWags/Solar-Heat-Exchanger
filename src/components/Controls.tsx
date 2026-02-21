@@ -72,8 +72,8 @@ export default function Controls() {
         Panel
       </Text>
       <ParamSlider label="Panel Area" paramKey="A_p" min={0.5} max={10} step={0.1} unit="m²" />
-      <ParamSlider label="U_loss (panel→env)" paramKey="U_loss_p" min={0.5} max={20} step={0.5} unit="W/(m²·C)" />
-      <ParamSlider label="UA panel→fluid" paramKey="UA_pf" min={10} max={500} step={5} unit="W/C" />
+      <ParamSlider label="U_loss (panel->env)" paramKey="U_loss_p" min={0.5} max={20} step={0.5} unit="W/(m²·C)" />
+      <ParamSlider label="UA panel->fluid" paramKey="UA_pf" min={10} max={500} step={5} unit="W/C" />
       <ParamSlider label="Panel Heat Capacity" paramKey="C_panel" min={1000} max={100000} step={500} unit="J/C" />
 
       <Divider my={4} />
@@ -81,13 +81,20 @@ export default function Controls() {
         Tank
       </Text>
       <ParamSlider label="Tank Volume" paramKey="V_tank" min={0.02} max={1.0} step={0.01} unit="m³" />
-      <ParamSlider label="UA tank→env" paramKey="UA_tank" min={0.5} max={30} step={0.5} unit="W/C" />
+      <ParamSlider label="UA tank->env" paramKey="UA_tank" min={0.5} max={30} step={0.5} unit="W/C" />
 
       <Divider my={4} />
       <Text fw={700} size="sm" tt="uppercase" c="dimmed">
         Flow
       </Text>
       <ParamSlider label="Mass flow rate" paramKey="m_dot" min={0} max={0.3} step={0.005} unit="kg/s" />
+
+      <Divider my={4} />
+      <Text fw={700} size="sm" tt="uppercase" c="dimmed">
+        Pipe Losses
+      </Text>
+      <ParamSlider label="Total pipe length" paramKey="pipe_length_total" min={0} max={50} step={1} unit="m" />
+      <ParamSlider label="Insulation thickness" paramKey="pipe_insulation_mm" min={10} max={100} step={5} unit="mm" />
 
       <Divider my={4} />
       <Text fw={700} size="sm" tt="uppercase" c="dimmed">

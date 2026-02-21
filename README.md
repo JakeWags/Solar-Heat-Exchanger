@@ -14,11 +14,11 @@ A real-time, browser-based simulation of a **flat-plate solar thermal collector*
   - [Solar Irradiance Model](#solar-irradiance-model)
   - [Governing Equations](#governing-equations)
     - [1. Panel energy balance](#1-panel-energy-balance)
-    - [2. Fluid heat pickup](#2-fluid-heat-pickup)
-    - [3. Tank energy balance](#3-tank-energy-balance)
-  - [Heat-Exchanger Effectiveness (ε–NTU)](#heat-exchanger-effectiveness-εntu)
-    - [Why ε–NTU?](#why-εntu)
-    - [Outlet temperature](#outlet-temperature)
+    - [2. Pipe heat losses](#2-pipe-heat-losses)
+    - [3. Fluid heat pickup](#3-fluid-heat-pickup)
+    - [4. Tank energy balance](#4-tank-energy-balance)
+  - [Pipe Insulation — Cylindrical-Shell Resistance](#pipe-insulation--cylindrical-shell-resistance)
+  - [Heat-Exchanger Effectiveness (ε–NTU) — Panel Heat Pickup](#heat-exchanger-effectiveness-εntu--panel-heat-pickup)
   - [Numerical Method — RK4](#numerical-method--rk4)
   - [Parameter Reference](#parameter-reference)
   - [Project Structure](#project-structure)
@@ -54,7 +54,7 @@ The model tracks **two lumped thermal capacitances** connected by a fluid loop:
 | **Lumped (well-mixed) tank** | The tank water is perfectly stirred, so a single temperature *T*\_tank describes the whole volume. In practice, tanks stratify this model captures the average behavior. |
 | **Steady-state fluid pass** | Fluid transit time through the collector is much shorter than the thermal time constants of the panel and tank, so we treat the fluid pass as quasi-static each time step. |
 | **No phase change** | The working fluid (water) remains liquid throughout. |
-| **No piping losses** | Heat loss in connecting pipes is neglected (equivalently, it is lumped into *UA*\_tank). |
+| **Insulated pipe losses** | Heat loss from the two connecting pipe legs (panel->tank, tank->panel) is modelled via the cylindrical-shell resistance formula and an ε–NTU effectiveness per leg. Copper tube diameter is fixed at 22 mm OD; insulation thickness and total pipe length are user-adjustable. |
 
 ---
 
@@ -109,26 +109,54 @@ where
 | $\alpha$ | short-wave absorptivity of the selective coating (0–1) |
 | $A_p$ | collector aperture area (m²) |
 | $G$ | global solar irradiance on the tilted surface (W/m²) |
-| $U_{\text{loss},p}$ | overall heat-loss coefficient, panel → ambient (W/(m²·C)) |
+| $U_{\text{loss},p}$ | overall heat-loss coefficient, panel -> ambient (W/(m²·C)) |
 | $T_\text{env}$ | ambient air temperature (°C) |
 
-### 2. Fluid heat pickup
+### 2. Pipe heat losses
 
-The fluid enters the panel at $T_\text{in} = T_\text{tank}$ (tank return) and exits at $T_\text{out}$. The heat transferred is:
+Each of the two connecting legs (tank→panel and panel→tank) is treated as a **plug-flow pipe** losing heat through a distributed cylindrical resistance to the surrounding air. The 1-D steady-state energy balance on the fluid element is:
 
 $$
-Q_\text{to fluid} = \dot{m} \, c_w \, (T_\text{out} - T_\text{in})
+\dot{C} \, \frac{dT}{dx} = -\frac{T(x) - T_\text{env}}{R_m}
+$$
+
+where $x$ is distance along the pipe, $\dot{C} = \dot{m}\,c_w$ (W/K) is the fluid heat capacity rate, and $R_m$ (K·m/W) is the thermal resistance per unit length of the insulated pipe (see derivation in the next section). This ODE has the exact analytical solution:
+
+$$
+T_\text{out} = T_\text{env} + \bigl(T_\text{in} - T_\text{env}\bigr)\,e^{-UA_\text{leg}\,/\,\dot{C}}
+$$
+
+where $UA_\text{leg} = (L/2)\,/\,R_m$ (W/K) is the overall thermal conductance of the half-leg.
+
+Applied to the two legs:
+
+$$
+T_\text{in,panel} = T_\text{env} + \bigl(T_\text{tank} - T_\text{env}\bigr)\,e^{-UA_\text{leg}\,/\,\dot{C}}
+$$
+
+$$
+T_\text{in,tank} = T_\text{env} + \bigl(T_\text{out,panel} - T_\text{env}\bigr)\,e^{-UA_\text{leg}\,/\,\dot{C}}
+$$
+
+The exponential factor is the **attenuation** of the difference between the fluid entry temperature and ambient: at 0 it means all heat is lost before the other end; at 1 it means no loss.
+
+### 3. Fluid heat pickup
+
+The fluid enters the panel at $T_\text{in,panel}$ (as adjusted for pipe loss above) and exits at $T_\text{out,panel}$. The heat transferred to the fluid at the panel is:
+
+$$
+Q_\text{to fluid} = \dot{m} \, c_w \, (T_\text{out,panel} - T_\text{in,panel})
 $$
 
 The outlet temperature is found via the **effectiveness–NTU method** (described in the next section).
 
-### 3. Tank energy balance
+### 4. Tank energy balance
 
-The storage tank receives energy from the hot fluid return and loses heat to the surroundings:
+The storage tank receives energy from the hot fluid return (at $T_\text{in,tank}$, reduced from $T_\text{out,panel}$ by the return-leg pipe loss) and loses heat to the surroundings:
 
 $$
 C_\text{tank} \, \frac{dT_\text{tank}}{dt}
-  = \dot{m} \, c_w \,(T_\text{out} - T_\text{tank})
+  = \dot{m} \, c_w \,(T_\text{in,tank} - T_\text{tank})
   \-\ UA_\text{tank}\,(T_\text{tank} - T_\text{env})
 $$
 
@@ -136,42 +164,38 @@ where $C_\text{tank} = \rho \, c_w \, V_\text{tank}$ is the thermal mass of the 
 
 ---
 
-## Heat-Exchanger Effectiveness (ε–NTU)
+## Pipe Insulation — Cylindrical-Shell Resistance
 
-Rather than solving the spatial temperature profile inside the collector tubes, we treat the panel–fluid interface as a single-stream heat exchanger. Only one fluid stream is present (the water), exchanging heat with a surface at $T_\text{panel}$.
-
-### Why ε–NTU?
-
-When fluid flows through a heat exchanger of known conductance $UA_\text{pf}$ (W/C), the maximum possible heat transfer is:
+$R_m$ (K·m/W) is the thermal resistance per unit length of the insulated pipe, composed of a cylindrical insulation layer and outer surface convection:
 
 $$
-Q_\text{max} = \dot{C} \,(T_\text{panel} - T_\text{in})
-\qquad\text{where}\quad
-\dot{C} = \dot{m}\,c_w
+R_m = \underbrace{\frac{\ln\!\bigl((r+t_\text{ins})/r\bigr)}{2\pi\,k_\text{ins}}}_{\text{insulation}} + \underbrace{\frac{1}{2\pi\,(r+t_\text{ins})\,h_\text{out}}}_{\text{outer convection}}
 $$
 
-The **effectiveness** $\varepsilon$ is the fraction of that maximum actually achieved:
+where $r = 0.011$ m (22 mm OD copper), $k_\text{ins} = 0.040$ W/(m·K) (elastomeric foam), $h_\text{out} = 10$ W/(m²·K) (natural convection on the outer surface). At 25 mm insulation this gives $R_m \approx 5.2$ K·m/W, i.e. **≈ 10.6 W/m** at $\Delta T = 55$ °C — consistent with the Engineering Toolbox reference range of 8–19 W/m for 22–76 mm pipe sizes.
+
+With $UA_\text{leg} = (L/2)\,/\,R_m$ (W/K), the attenuation factor along one leg is $e^{-UA_\text{leg}/\dot{C}}$. At typical conditions (10 m total pipe, 25 mm insulation, $\dot{m}=0.05$ kg/s) this is $\approx 0.998$, corresponding to **≈ 0.2 °C** temperature drop per leg — small but physically real, and it grows significantly with longer or poorly insulated pipe runs.
+
+---
+
+## Heat-Exchanger Effectiveness (ε–NTU) — Panel Heat Pickup
+
+Rather than solving the spatial temperature profile inside the collector tubes, we treat the panel–fluid interface as a single-stream heat exchanger with a constant wall temperature (the lumped panel). Given total conductance $UA_\text{pf}$ (W/K) and heat capacity rate $\dot{C} = \dot{m}\,c_w$, the **Number of Transfer Units** and **effectiveness** are:
 
 $$
-\varepsilon
-  = 1 - \exp\!\Bigl(-\frac{UA_\text{pf}}{\dot{C}}\Bigr)
+\text{NTU} = \frac{UA_\text{pf}}{\dot{C}}
+\qquad
+\varepsilon = 1 - e^{-\text{NTU}}
 $$
 
-This is the standard expression for a single-stream exchanger with a constant wall temperature (the lumped panel). The **Number of Transfer Units** is $\text{NTU} = UA_\text{pf}/\dot{C}$.
-
-### Outlet temperature
-
 $$
-T_\text{out}
-  = T_\text{in} + \varepsilon\,(T_\text{panel} - T_\text{in})
+T_\text{out,panel} = T_\text{in,panel} + \varepsilon\,(T_\text{panel} - T_\text{in,panel})
 $$
-
-So $Q_\text{to fluid} = \dot{C}\,\varepsilon\,(T_\text{panel} - T_\text{in})$.
 
 **Physical intuition:**
 - When $UA_\text{pf} \gg \dot{C}$ (very good contact or slow flow), $\varepsilon \to 1$ and the fluid exits at the panel temperature — perfect heat exchange.
 - When $UA_\text{pf} \ll \dot{C}$ (poor contact or fast flow), $\varepsilon \to 0$ and the fluid passes through almost unheated.
-- When $\dot{m} = 0$, $\varepsilon = 0$ and no fluid heat transfer occurs the panel simply heats up and loses energy to the environment.
+- When $\dot{m} = 0$, $\varepsilon = 0$ and no fluid heat transfer occurs; the panel simply heats up and loses energy to the environment.
 
 ---
 
@@ -223,6 +247,8 @@ where $Q_i$ is the instantaneous $Q_\text{to fluid}$ at RK4 stage $i$.
 | Mass flow rate | $\dot{m}$ | 0.05 | kg/s | Circulating pump flow (~3 L/min) |
 | Water density | $\rho$ | 997 | kg/m³ | At ~25 °C |
 | Specific heat | $c_w$ | 4181 | J/(kg·C) | Water at ~25 °C |
+| Total pipe length | $L$ | 10.0 | m | Combined length of both loop legs (panel->tank + tank->panel) |
+| Insulation thickness | $t_\text{ins}$ | 25 | mm | Foam insulation around 22 mm OD copper tube (25 mm = standard 1 inch) |
 | Time step | $\Delta t$ | 0.25 | s | RK4 integration step |
 
 ---
@@ -232,7 +258,7 @@ where $Q_i$ is the instantaneous $Q_\text{to fluid}$ at RK4 stage $i$.
 ```
 src/
 ├-- types.ts              # Params, State, Snapshot type definitions
-├-- physics.ts            # stepDerivatives(): the ODE right-hand side (energy balances + ε–NTU)
+├-- physics.ts            # stepDerivatives(): ODE RHS — panel balance (ε–NTU), pipe decay, tank balance
 ├-- simulate.ts           # rk4Step(): classical RK4 integrator wrapping physics.ts
 ├-- store.ts              # Zustand store (params, state, history, controls)
 ├-- hooks/
@@ -250,7 +276,8 @@ src/
 
 - **Zustand** for state management — lightweight, no boilerplate, easy to read from outside React (inside `requestAnimationFrame`).
 - **RK4** over Euler — virtually no additional cost but dramatically better accuracy for the same step size.
-- **ε–NTU** over finite-difference pipe model — gives an analytical outlet temperature with a single exponential, appropriate for the lumped-capacitance abstraction.
+- **ε–NTU** for the panel–fluid heat pickup — gives an analytical outlet temperature with a single exponential, appropriate for the lumped-capacitance abstraction.
+- **Plug-flow exponential decay** for pipe legs — derived from the 1-D steady-state pipe ODE, giving $T_\text{out} = T_\text{env} + (T_\text{in} - T_\text{env})\,e^{-UA_\text{leg}/\dot{C}}$. This correctly captures temperature decay along a pipe carrying fluid past an insulated wall, without introducing a heat-exchanger effectiveness that would imply a second fluid stream.
 - **vega-embed** over a React charting library — Vega-Lite specs are declarative and portable data is swapped in-place each frame for performance.
 
 ---

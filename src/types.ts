@@ -11,7 +11,7 @@ export type Params = {
   // Panel geometry/physics
   A_p: number;              // m²
   U_loss_p: number;         // W/(m²·C)
-  UA_pf: number;            // W/C (panel→fluid conductance)
+  UA_pf: number;            // W/C (panel->fluid conductance)
   C_panel: number;          // J/C (panel lumped heat capacity)
 
   // Tank physics
@@ -22,6 +22,10 @@ export type Params = {
   m_dot: number;            // kg/s
   rho: number;              // kg/m³
   c_w: number;              // J/(kg·C)
+
+  // Pipe heat loss (22 mm OD copper, elastomeric-foam insulation)
+  pipe_length_total: number; // m  (both legs: panel->tank + tank->panel)
+  pipe_insulation_mm: number; // mm (insulation thickness; 25 mm = 1 inch standard)
 
   // Integrator
   dt: number;               // s (simulation step)

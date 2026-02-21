@@ -51,6 +51,10 @@ export const useSimStore = create<SimStore>((set) => ({
     rho: 997.0,              // kg/m³
     c_w: 4181.0,             // J/(kg·C)
 
+    // Pipe heat loss
+    pipe_length_total: 10.0, // m  (5 m panel->tank + 5 m tank->panel)
+    pipe_insulation_mm: 25,  // mm (25 mm = 1 inch, standard elastomeric foam)
+
     // Integrator
     dt: 0.25,                // s
   },

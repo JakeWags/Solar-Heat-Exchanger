@@ -2,7 +2,7 @@
  * Struct-of-Arrays snapshot store backed by Float32Arrays.
  *
  * Why SoA?
- *   - LTTB iterates one column at a time → contiguous Float32 reads are
+ *   - LTTB iterates one column at a time -> contiguous Float32 reads are
  *     ~4× more cache-friendly than walking an array of objects.
  *   - Float32 halves memory vs Float64 (temp precision to 0.003 °C is fine
  *     for visualisation; time precision to ~1 s is fine at any sim scale).

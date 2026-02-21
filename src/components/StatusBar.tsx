@@ -28,7 +28,7 @@ export default function StatusBar() {
   const kWh = (state.E_harvest / 3.6e6).toFixed(3);
   const G = computeSolarG(state.t, params);
 
-  // Adaptive sim-time display: min → h → days
+  // Adaptive sim-time display: min -> h -> days
   let simTimeValue: string;
   let simTimeUnit: string;
   if (state.t < 7_200) {
