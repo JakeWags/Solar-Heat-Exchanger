@@ -1,6 +1,6 @@
 # Solar Thermal Panel Simulator
 
-A real-time, browser-based simulation of a **flat-plate solar thermal collector** coupled to a **well-mixed storage tank** via a forced-circulation loop. The physics is solved with a fourth-order Runge–Kutta (RK4) integrator; the UI is built with React, Mantine, and Vega-Lite (via vega-embed).
+A real-time, browser-based simulation of a **flat-plate solar thermal collector** coupled to a **well-mixed storage tank** via a forced-circulation loop. The physics is solved with a fourth-order Runge–Kutta (RK4) integrator the UI is built with React, Mantine, and Vega-Lite (via vega-embed).
 
 ---
 
@@ -11,6 +11,7 @@ A real-time, browser-based simulation of a **flat-plate solar thermal collector*
   - [Quick Start](#quick-start)
   - [Physical System Overview](#physical-system-overview)
     - [Key simplifications (the "lumped-capacitance" approach)](#key-simplifications-the-lumped-capacitance-approach)
+  - [Solar Irradiance Model](#solar-irradiance-model)
   - [Governing Equations](#governing-equations)
     - [1. Panel energy balance](#1-panel-energy-balance)
     - [2. Fluid heat pickup](#2-fluid-heat-pickup)
@@ -33,7 +34,7 @@ npm install
 npm run dev        # opens on http://localhost:5173
 ```
 
-The simulation starts automatically. Use the sidebar controls to adjust parameters in real time; charts and readouts update every animation frame.
+The simulation starts automatically. Use the sidebar controls to adjust parameters in real time charts and readouts update every animation frame.
 
 ---
 
@@ -42,31 +43,15 @@ The simulation starts automatically. Use the sidebar controls to adjust paramete
 The model tracks **two lumped thermal capacitances** connected by a fluid loop:
 
 ```
-                    Solar irradiance G (W/m²)
-                          │
-                          ▼
-               ┌─────────────────────┐
-               │   Absorber Panel    │
-               │   T_panel, C_panel  │──── Q_loss → ambient (T_env)
-               └────────┬───────────┘
-                    fluid out ↓  T_out
-                         │
-                  ┌──────▼──────┐
-                  │  Storage    │
-                  │  Tank       │──── Q_tank_loss → ambient (T_env)
-                  │  T_tank     │
-                  └──────┬──────┘
-                    fluid in ↑  T_in = T_tank
-                         │
-                    (pump, ṁ) ◄──── loops back to panel inlet
+  sun -> panel -> pump/pipes -> tank -\     
+           \--------------------------/
 ```
-
 ### Key simplifications (the "lumped-capacitance" approach)
 
 | Assumption | What it means |
 |---|---|
 | **Lumped panel** | The entire absorber plate is at a single, uniform temperature *T*\_panel at any instant. No spatial temperature gradient across the plate. This is valid when the Biot number Bi = *hL*/*k* ≪ 1 (thin, high-conductivity metal). |
-| **Lumped (well-mixed) tank** | The tank water is perfectly stirred, so a single temperature *T*\_tank describes the whole volume. In practice, tanks stratify; this model captures the average behavior. |
+| **Lumped (well-mixed) tank** | The tank water is perfectly stirred, so a single temperature *T*\_tank describes the whole volume. In practice, tanks stratify this model captures the average behavior. |
 | **Steady-state fluid pass** | Fluid transit time through the collector is much shorter than the thermal time constants of the panel and tank, so we treat the fluid pass as quasi-static each time step. |
 | **No phase change** | The working fluid (water) remains liquid throughout. |
 | **No piping losses** | Heat loss in connecting pipes is neglected (equivalently, it is lumped into *UA*\_tank). |
@@ -78,7 +63,7 @@ The model tracks **two lumped thermal capacitances** connected by a fluid loop:
 Rather than a fixed irradiance, $G$ is computed from the simulated time of day using a **half-sine bell curve** centred on solar noon:
 
 $$
-G(t) = G_\text{peak} \cdot \max\!\Bigl(0,\;\sin\!\Bigl(\pi\,\frac{h(t) - h_\text{rise}}{h_\text{day}}\Bigr)\Bigr)
+G(t) = G_\text{peak} \cdot \max\!\Bigl(0,\\sin\!\Bigl(\pi\,\frac{h(t) - h_\text{rise}}{h_\text{day}}\Bigr)\Bigr)
 $$
 
 where the hour of day $h(t)$ and derived quantities are:
@@ -112,8 +97,8 @@ The absorber plate accumulates energy from solar radiation, loses heat to the en
 $$
 C_\text{panel} \, \frac{dT_\text{panel}}{dt}
   = \underbrace{\alpha \, A_p \, G}_{\text{solar absorbed}}
-  \;-\; \underbrace{U_{\text{loss},p} \, A_p \,(T_\text{panel} - T_\text{env})}_{\text{convective + radiative loss}}
-  \;-\; \underbrace{Q_\text{to fluid}}_{\text{heat extracted by fluid}}
+  \-\ \underbrace{U_{\text{loss},p} \, A_p \,(T_\text{panel} - T_\text{env})}_{\text{convective + radiative loss}}
+  \-\ \underbrace{Q_\text{to fluid}}_{\text{heat extracted by fluid}}
 $$
 
 where
@@ -144,7 +129,7 @@ The storage tank receives energy from the hot fluid return and loses heat to the
 $$
 C_\text{tank} \, \frac{dT_\text{tank}}{dt}
   = \dot{m} \, c_w \,(T_\text{out} - T_\text{tank})
-  \;-\; UA_\text{tank}\,(T_\text{tank} - T_\text{env})
+  \-\ UA_\text{tank}\,(T_\text{tank} - T_\text{env})
 $$
 
 where $C_\text{tank} = \rho \, c_w \, V_\text{tank}$ is the thermal mass of the water in the tank.
@@ -186,13 +171,13 @@ So $Q_\text{to fluid} = \dot{C}\,\varepsilon\,(T_\text{panel} - T_\text{in})$.
 **Physical intuition:**
 - When $UA_\text{pf} \gg \dot{C}$ (very good contact or slow flow), $\varepsilon \to 1$ and the fluid exits at the panel temperature — perfect heat exchange.
 - When $UA_\text{pf} \ll \dot{C}$ (poor contact or fast flow), $\varepsilon \to 0$ and the fluid passes through almost unheated.
-- When $\dot{m} = 0$, $\varepsilon = 0$ and no fluid heat transfer occurs; the panel simply heats up and loses energy to the environment.
+- When $\dot{m} = 0$, $\varepsilon = 0$ and no fluid heat transfer occurs the panel simply heats up and loses energy to the environment.
 
 ---
 
 ## Numerical Method — RK4
 
-The two coupled ODEs form the state vector $\mathbf{y} = [T_\text{panel},\; T_\text{tank}]$. We advance them in time with the classical **fourth-order Runge–Kutta** scheme:
+The two coupled ODEs form the state vector $\mathbf{y} = [T_\text{panel},\ T_\text{tank}]$. We advance them in time with the classical **fourth-order Runge–Kutta** scheme:
 
 $$
 \mathbf{y}_{n+1} = \mathbf{y}_n + \frac{\Delta t}{6}\bigl(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\bigr)
@@ -246,19 +231,19 @@ where $Q_i$ is the instantaneous $Q_\text{to fluid}$ at RK4 stage $i$.
 
 ```
 src/
-├── types.ts              # Params, State, Snapshot type definitions
-├── physics.ts            # stepDerivatives(): the ODE right-hand side (energy balances + ε–NTU)
-├── simulate.ts           # rk4Step(): classical RK4 integrator wrapping physics.ts
-├── store.ts              # Zustand store (params, state, history, controls)
-├── hooks/
-│   └── useSimLoop.ts     # requestAnimationFrame loop driving the simulation
-├── components/
-│   ├── Controls.tsx      # Mantine sliders/inputs for all parameters
-│   ├── StatusBar.tsx     # Live readouts (time, temperatures, energy)
-│   ├── TempChart.tsx     # Vega-Lite line chart (T_panel, T_tank, T_out)
-│   └── IrradianceChart.tsx # Vega-Lite area chart (solar irradiance)
-├── App.tsx               # Main layout (AppShell with sidebar + charts)
-└── main.tsx              # Entry point with MantineProvider
+├-- types.ts              # Params, State, Snapshot type definitions
+├-- physics.ts            # stepDerivatives(): the ODE right-hand side (energy balances + ε–NTU)
+├-- simulate.ts           # rk4Step(): classical RK4 integrator wrapping physics.ts
+├-- store.ts              # Zustand store (params, state, history, controls)
+├-- hooks/
+│   └-- useSimLoop.ts     # requestAnimationFrame loop driving the simulation
+├-- components/
+│   ├-- Controls.tsx      # Mantine sliders/inputs for all parameters
+│   ├-- StatusBar.tsx     # Live readouts (time, temperatures, energy)
+│   ├-- TempChart.tsx     # Vega-Lite line chart (T_panel, T_tank, T_out)
+│   └-- IrradianceChart.tsx # Vega-Lite area chart (solar irradiance)
+├-- App.tsx               # Main layout (AppShell with sidebar + charts)
+└-- main.tsx              # Entry point with MantineProvider
 ```
 
 ### Key design decisions
@@ -266,7 +251,7 @@ src/
 - **Zustand** for state management — lightweight, no boilerplate, easy to read from outside React (inside `requestAnimationFrame`).
 - **RK4** over Euler — virtually no additional cost but dramatically better accuracy for the same step size.
 - **ε–NTU** over finite-difference pipe model — gives an analytical outlet temperature with a single exponential, appropriate for the lumped-capacitance abstraction.
-- **vega-embed** over a React charting library — Vega-Lite specs are declarative and portable; data is swapped in-place each frame for performance.
+- **vega-embed** over a React charting library — Vega-Lite specs are declarative and portable data is swapped in-place each frame for performance.
 
 ---
 
