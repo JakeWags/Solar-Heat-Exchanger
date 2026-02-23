@@ -30,11 +30,15 @@ export function rk4Step(state: State, p: Params): { next: State; T_out_panel: nu
   _s4.E_harvest = E_harvest;
   const k4 = stepDerivatives(_s4, p);
 
+  // Only accumulate positive Q_to_fluid (energy from sun -> system)
+  const Q_avg = (k1.Q_to_fluid + 2 * k2.Q_to_fluid + 2 * k3.Q_to_fluid + k4.Q_to_fluid) / 6;
+  const dE_harvest = Math.max(0, Q_avg) * dt;
+
   const next: State = {
     T_panel:   T_panel   + (dt / 6) * (k1.dT_panel    + 2 * k2.dT_panel    + 2 * k3.dT_panel    + k4.dT_panel),
     T_tank:    T_tank    + (dt / 6) * (k1.dT_tank     + 2 * k2.dT_tank     + 2 * k3.dT_tank     + k4.dT_tank),
     t:         t + dt,
-    E_harvest: E_harvest + (dt / 6) * (k1.Q_to_fluid  + 2 * k2.Q_to_fluid  + 2 * k3.Q_to_fluid  + k4.Q_to_fluid),
+    E_harvest: E_harvest + dE_harvest,
   };
 
   return { next, T_out_panel: k4.T_out_panel, Q_to_fluid: k4.Q_to_fluid };

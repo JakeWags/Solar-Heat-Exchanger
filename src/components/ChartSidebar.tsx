@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { ScrollArea, Stack, Text } from '@mantine/core';
 import TempChart from './TempChart';
 import IrradianceChart from './IrradianceChart';
+import EnergyChart from './EnergyChart';
 
 const MIN_WIDTH = 300;
 const MAX_WIDTH = 1000;
@@ -117,6 +118,10 @@ export default function ChartSidebar() {
               Temperature
             </Text>
             <TempChart width={width - 120} height={220} />
+            <Text size="xs" fw={500} c="gray.4">
+              Energy
+            </Text>
+            <EnergyChart width={width - 120} height={220} />
             <Text size="xs" fw={500} c="gray.4">
               Irradiance
             </Text>

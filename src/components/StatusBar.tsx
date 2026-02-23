@@ -24,8 +24,14 @@ export default function StatusBar() {
   const state = useSimStore((s) => s.state);
   const params = useSimStore((s) => s.params);
 
-  const kJ = (state.E_harvest / 1000).toFixed(1);
-  const kWh = (state.E_harvest / 3.6e6).toFixed(3);
+  const kWh_harvested = (state.E_harvest / 3.6e6).toFixed(3);
+  
+  // Calculate current thermal energy stored in system above ambient
+  const E_panel = params.C_panel * (state.T_panel - params.T_env);
+  const E_tank = params.rho * params.c_w * params.V_tank * (state.T_tank - params.T_env);
+  const E_stored = Math.max(0, E_panel + E_tank);
+  const MJ_stored = (E_stored / 1e6).toFixed(2);
+  
   const G = computeSolarG(state.t, params);
 
   // Adaptive sim-time display: min -> h -> days
@@ -55,8 +61,8 @@ export default function StatusBar() {
         <Stat label="Time of Day" value={timeOfDay} unit="" />
         <Stat label="T_panel" value={state.T_panel.toFixed(1)} unit="°C" />
         <Stat label="T_tank" value={state.T_tank.toFixed(1)} unit="°C" />
-        <Stat label="Harvested" value={kJ} unit="kJ" />
-        <Stat label="Energy" value={kWh} unit="kWh" />
+        <Stat label="Harvested" value={kWh_harvested} unit="kWh" />
+        <Stat label="Stored" value={MJ_stored} unit="MJ" />
         <Stat label="Irradiance" value={G.toFixed(0)} unit="W/m²" />
       </Group>
     </Stack>

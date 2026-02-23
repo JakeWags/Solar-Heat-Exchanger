@@ -41,8 +41,8 @@ export function useSimLoop() {
         // -- Chart throttle: push one snapshot + trigger Vega redraw at ~10 fps -
         if (wallTime - lastChartUpdate.current >= CHART_FPS_MS) {
           lastChartUpdate.current = wallTime;
-          // SoA push — 5 scalar writes, zero object allocation
-          snapshots.push(s.t, s.T_panel, s.T_tank, lastTOut, computeSolarG(s.t, params));
+          // SoA push — 6 scalar writes, zero object allocation
+          snapshots.push(s.t, s.T_panel, s.T_tank, lastTOut, computeSolarG(s.t, params), s.E_harvest);
           store.bumpRenderTick();
         }
       }

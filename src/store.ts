@@ -10,7 +10,7 @@ export type SimStore = {
   /**
    * SoA snapshot store backed by Float32Arrays.
    * Lives outside Zustand reactive state — mutations never trigger re-renders.
-   * Pushed once per chart tick (~10 fps); O(1) clear on reset.
+   * Pushed once per chart tick (~10 fps);
    */
   snapshots: SnapshotStore;
   /** Incremented at ~10 fps to signal charts to redraw. */
@@ -75,7 +75,7 @@ export const useSimStore = create<SimStore>((set) => ({
   toggle: () => set((st) => ({ running: !st.running })),
   setSpeed: (v) => set({ speed: v }),
   reset: () => {
-    useSimStore.getState().snapshots.clear();   // O(1) — just resets length counter
+    useSimStore.getState().snapshots.clear();
     set({ state: { T_panel: 20, T_tank: 20, t: 0, E_harvest: 0 }, renderTick: 0 });
   },
 }));

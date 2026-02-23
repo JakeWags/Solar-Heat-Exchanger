@@ -289,13 +289,12 @@ src/
 While this MVP performs well as a simplified physical model with basic data visualization, there are many things that could be added to enhance the overall system and experience.
 
 - **Chart Interactivity**: This would add a nice dimension to the data exploration, although this is notoriously difficult for real-time timeseries updating charts.
-- **2D Schematic Visualization**: This would add a good visual component to better understand the system.
-- **3D Schematic Vsiualization**: Even better, a WebGL integration showcasing a three dimensional, interactive view of the system would be very cool. This would allow for many dynamic updates that sync with the user inputs. For example, increasing the pipe length could actually change the structure of the system in real time. Also, the diurnal function for solar irradiance could theoretically be used to calculate the lighting cosine angle for diffuse and specular lighting.
 - **Segmented capacitance models**: Currently, the lumped-capacitance model is a vast simplification of a real solar panel and water storage tank. By using a segmented model, the panel could be split into sub-nodes with their own heat transfer and accumulation. This would allow for much better approximation of a system where the water could be heating up as it passes through each node, rather than simply heating once from the entire panel. Similarly, a segmented tank could allow for a better approximation of convection currents, although this solution is still vastly simplified.
 - **Diurnal ambient temperature**: A function to adjust the ambient temperature similarly to the solar irradiance would be interesting, as it would better showcase how the system reacts to cooling at night times versus loss during the day.
 - **"Smart" Pump**: A "smart" pump could turn off when the panel is cooler than the tank, for example. This would allow for a more customizable system that could lead to overall more efficient system design and data exploration.
 - **Pump Loss**: A real-world heat pump is never lossless, simulating this loss would further contribute to the improvement of the system.
 - **Material selection**: Currently, we assume copper material values for panel thermal mass/conductivity and the pipe insulation properties. It would be very cool to implement dynamic material selection, allowing for more physics real properties.
+- **3D interaction**: Currently, the 3D visualization supports camera actions but nothing else. It would be cool to allow the user to change properties like the panel area in real time using the 3D interface.
 
 ## AI Usage Disclosure
 

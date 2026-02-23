@@ -20,6 +20,7 @@ export class SnapshotStore {
   private _T_tank:  Float32Array;
   private _T_out:   Float32Array;
   private _G:       Float32Array;
+  private _E_harvest: Float32Array;
   private _len = 0;
   private _cap: number;
 
@@ -30,11 +31,12 @@ export class SnapshotStore {
     this._T_tank = new Float32Array(initialCapacity);
     this._T_out = new Float32Array(initialCapacity);
     this._G = new Float32Array(initialCapacity);
+    this._E_harvest = new Float32Array(initialCapacity);
   }
 
   get length(): number { return this._len; }
 
-  push(t: number, T_panel: number, T_tank: number, T_out: number, G: number): void {
+  push(t: number, T_panel: number, T_tank: number, T_out: number, G: number, E_harvest: number): void {
     if (this._len === this._cap) this._grow();
     const i = this._len++;
     this._t[i] = t;
@@ -42,17 +44,19 @@ export class SnapshotStore {
     this._T_tank[i] = T_tank;
     this._T_out[i] = T_out;
     this._G[i] = G;
+    this._E_harvest[i] = E_harvest;
   }
 
-  /** O(1) views into live data — no copy. */
+  /** views into live data */
   get t():       Float32Array { return this._t.subarray(0, this._len); }
   get T_panel(): Float32Array { return this._T_panel.subarray(0, this._len); }
   get T_tank():  Float32Array { return this._T_tank.subarray(0, this._len); }
   get T_out():   Float32Array { return this._T_out.subarray(0, this._len); }
   get G():       Float32Array { return this._G.subarray(0, this._len); }
+  get E_harvest(): Float32Array { return this._E_harvest.subarray(0, this._len); }
 
-  /** Last recorded values — O(1). */
-  last(): { t: number; T_panel: number; T_tank: number; T_out: number; G: number } {
+  /** Last recorded values. */
+  last(): { t: number; T_panel: number; T_tank: number; T_out: number; G: number; E_harvest: number } {
     const i = this._len - 1;
     return {
       t:       this._t[i],
@@ -60,10 +64,11 @@ export class SnapshotStore {
       T_tank:  this._T_tank[i],
       T_out:   this._T_out[i],
       G:       this._G[i],
+      E_harvest: this._E_harvest[i],
     };
   }
 
-  /** Resets length to zero — O(1). Underlying buffers are reused on next push. */
+  /** Resets length to zero */
   clear(): void { this._len = 0; }
 
   private _grow(): void {
@@ -78,6 +83,7 @@ export class SnapshotStore {
     this._T_tank = grow(this._T_tank);
     this._T_out = grow(this._T_out);
     this._G = grow(this._G);
+    this._E_harvest = grow(this._E_harvest);
     this._cap = newCap;
   }
 }

@@ -100,7 +100,6 @@ export default function IrradianceChart({ width = 640, height = 180 }: Props) {
       return;
     }
 
-    // O(1) incremental insert for the hot path
     const i = ss.length - 1;
     const cs = vega.changeset().insert([{ t: +(t_arr[i] / divisor).toFixed(4), G: +ss.G[i].toFixed(1) }]);
     vegaRef.current.view.change('table', cs).run();
