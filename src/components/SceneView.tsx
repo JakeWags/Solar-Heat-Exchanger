@@ -194,7 +194,7 @@ function buildScene(canvas: HTMLCanvasElement, container: HTMLDivElement, w: num
   });
 
   // Load solar-cell texture onto the absorber front face.
-  new THREE.TextureLoader().load('/textures/solarpanel.png', (tex) => {
+  new THREE.TextureLoader().load(`${import.meta.env.BASE_URL}textures/solarpanel.png`, (tex) => {
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.RepeatWrapping;
