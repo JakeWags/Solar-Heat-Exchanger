@@ -93,6 +93,9 @@ const TANK_H = 1.5;
 // rounded to the store default so the panel looks right out of the box).
 const A_P_REF = 2.0; // m²
 
+// Reference tank volume matching the store default (0.2 m³ = 200 L).
+const V_TANK_REF = 0.2; // m³
+
 // --- Scene factory ------------------------------------------------------------
 
 interface SceneHandle {
@@ -249,6 +252,12 @@ function buildScene(canvas: HTMLCanvasElement, container: HTMLDivElement, w: num
   scene.add(coldPipe);
 
   // -- Storage tank ------------------------------------------------------------
+  // tankGroup is rooted at ground level (TANK_CTR.x, 0, TANK_CTR.z) so that
+  // uniform scaling keeps the base on the floor.
+  const tankGroup = new THREE.Group();
+  tankGroup.position.set(TANK_CTR.x, 0, TANK_CTR.z);
+  scene.add(tankGroup);
+
   // Main insulated body — colour driven by T_tank every frame.
   const tankMat = new THREE.MeshPhongMaterial({
     color:     new THREE.Color(0.25, 0.42, 0.92),
@@ -256,17 +265,17 @@ function buildScene(canvas: HTMLCanvasElement, container: HTMLDivElement, w: num
     shininess: 28,
   });
   const tankBody = new THREE.Mesh(new THREE.CylinderGeometry(TANK_R, TANK_R, TANK_H, 32), tankMat);
-  tankBody.position.copy(TANK_CTR);
+  tankBody.position.set(0, TANK_H / 2, 0);  // local: centre of cylinder above base
   tankBody.castShadow = tankBody.receiveShadow = true;
-  scene.add(tankBody);
+  tankGroup.add(tankBody);
 
   // End-cap flanges
   const capMat = new THREE.MeshPhongMaterial({ color: 0x42525e, shininess: 60 });
-  for (const y of [TANK_BTM.y + 0.022, TANK_TOP.y - 0.022]) {
+  for (const localY of [TANK_BTM.y + 0.022, TANK_TOP.y - 0.022]) {
     const cap = new THREE.Mesh(new THREE.CylinderGeometry(TANK_R + 0.02, TANK_R + 0.02, 0.045, 32), capMat);
-    cap.position.set(TANK_CTR.x, y, TANK_CTR.z);
+    cap.position.set(0, localY, 0);
     cap.castShadow = true;
-    scene.add(cap);
+    tankGroup.add(cap);
   }
 
   // Base plinth
@@ -274,10 +283,10 @@ function buildScene(canvas: HTMLCanvasElement, container: HTMLDivElement, w: num
     new THREE.CylinderGeometry(TANK_R + 0.10, TANK_R + 0.10, 0.06, 32),
     capMat,
   );
-  plinth.position.set(TANK_CTR.x, 0.03, TANK_CTR.z);
+  plinth.position.set(0, 0.03, 0);
   plinth.castShadow = true;
   plinth.receiveShadow = true;
-  scene.add(plinth);
+  tankGroup.add(plinth);
 
   // -- Temperature labels (CSS2D) --------------------------------------------
   function makeLabelDiv(): HTMLDivElement {
@@ -335,6 +344,11 @@ function buildScene(canvas: HTMLCanvasElement, container: HTMLDivElement, w: num
     // --- Panel area scale (XZ only — keep thickness constant) ----------------
     const panelScale = Math.sqrt(params.A_p / A_P_REF);
     panelGroup.scale.set(panelScale, 1, panelScale);
+
+    // --- Tank volume scale (uniform — preserves H/R aspect ratio) ------------
+    const tankScale = Math.cbrt(params.V_tank / V_TANK_REF);
+    tankGroup.scale.setScalar(tankScale);
+    tankLabel.position.y = TANK_H * tankScale + 0.22;
 
     // --- Temperature gradient colours ----------------------------------------
     // Panel absorber and hot supply pipe <- T_panel
