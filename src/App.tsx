@@ -6,12 +6,9 @@ import {
   ScrollArea,
   Stack,
   Paper,
-  Text,
 } from '@mantine/core';
 import { useSimStore } from './store';
 import { useSimLoop } from './hooks/useSimLoop';
-import TempChart from './components/TempChart';
-import IrradianceChart from './components/IrradianceChart';
 import Controls from './components/Controls';
 import StatusBar from './components/StatusBar';
 import SceneView from './components/SceneView';
