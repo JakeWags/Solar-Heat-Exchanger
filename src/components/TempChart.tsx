@@ -76,19 +76,19 @@ function buildRows(
   divisor: number,
 ): Row[] {
   const n = t_arr.length;
-  const panelPts  = new Array<[number, number]>(n);
-  const tankPts   = new Array<[number, number]>(n);
+  const panelPts = new Array<[number, number]>(n);
+  const tankPts = new Array<[number, number]>(n);
   const outletPts = new Array<[number, number]>(n);
 
   for (let i = 0; i < n; i++) {
     const t = t_arr[i] / divisor;
-    panelPts[i]  = [t, panel[i]];
-    tankPts[i]   = [t, tank[i]];
+    panelPts[i] = [t, panel[i]];
+    tankPts[i] = [t, tank[i]];
     outletPts[i] = [t, out[i]];
   }
 
-  const dp  = LTTB(panelPts,  DOWNSAMPLE_THRESHOLD) as [number, number][];
-  const dt  = LTTB(tankPts,   DOWNSAMPLE_THRESHOLD) as [number, number][];
+  const dp = LTTB(panelPts,  DOWNSAMPLE_THRESHOLD) as [number, number][];
+  const dt = LTTB(tankPts,   DOWNSAMPLE_THRESHOLD) as [number, number][];
   const do_ = LTTB(outletPts, DOWNSAMPLE_THRESHOLD) as [number, number][];
 
   const rows: Row[] = new Array(dp.length + dt.length + do_.length);
@@ -100,13 +100,13 @@ function buildRows(
 }
 
 export default function TempChart({ width = 640, height = 300 }: Props) {
-  const containerRef  = useRef<HTMLDivElement>(null);
-  const vegaRef       = useRef<Awaited<ReturnType<typeof embed>> | null>(null);
-  const unitRef       = useRef<TimeUnit>('min');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const vegaRef = useRef<Awaited<ReturnType<typeof embed>> | null>(null);
+  const unitRef = useRef<TimeUnit>('min');
   // Track how many snapshots were in the last full rebuild
   const lastRebuildAt = useRef<number>(0);
-  const renderTick    = useSimStore((s) => s.renderTick);
-  const T_env         = useSimStore((s) => s.params.T_env);
+  const renderTick = useSimStore((s) => s.renderTick);
+  const T_env = useSimStore((s) => s.params.T_env);
 
   // -- Mount: initial embed --------------------------------------------------
   useEffect(() => {
@@ -132,8 +132,8 @@ export default function TempChart({ width = 640, height = 300 }: Props) {
     const ss = useSimStore.getState().snapshots;
     if (!vegaRef.current || ss.length === 0) return;
 
-    const t_arr   = ss.t;
-    const maxT    = t_arr[ss.length - 1];
+    const t_arr = ss.t;
+    const maxT = t_arr[ss.length - 1];
     const newUnit = getTimeUnit(maxT);
     const divisor = DIVISOR[newUnit];
 
@@ -171,8 +171,8 @@ export default function TempChart({ width = 640, height = 300 }: Props) {
     }
 
     // -- Hot path: O(1) incremental insert of only the latest point --------
-    const i  = ss.length - 1;
-    const t  = +(t_arr[i] / divisor).toFixed(4);
+    const i = ss.length - 1;
+    const t = +(t_arr[i] / divisor).toFixed(4);
     const cs = vega.changeset().insert([
       { t, Temperature: +ss.T_panel[i].toFixed(2), series: 'Panel'  },
       { t, Temperature: +ss.T_tank[i].toFixed(2),  series: 'Tank'   },

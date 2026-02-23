@@ -3,8 +3,8 @@ import type { Params, State } from './types';
 const EPS = 1e-9;
 
 // -- Pipe heat-loss constants (fixed 22 mm OD copper, elastomeric-foam insulation) --
-const PIPE_R_OUTER   = 0.011;  // m   (22 mm OD copper tube -> radius 11 mm)
-const K_INSULATION   = 0.040;  // W/(m·K) elastomeric foam (Armaflex-class)
+const PIPE_R_OUTER = 0.011;  // m   (22 mm OD copper tube -> radius 11 mm)
+const K_INSULATION = 0.040;  // W/(m·K) elastomeric foam (Armaflex-class)
 const H_PIPE_SURFACE = 10.0;   // W/(m²·K) natural convection on outer surface
 
 export type Derivatives = {
@@ -19,7 +19,7 @@ export type Derivatives = {
  *
  *   R_tot = R_insulation + R_outer_convection
  *
- *   R_ins  = ln((r_pipe + t_ins) / r_pipe) / (2π · k_ins)
+ *   R_ins = ln((r_pipe + t_ins) / r_pipe) / (2π · k_ins)
  *   R_conv = 1 / (2π · (r_pipe + t_ins) · h_outer)
  *
  * For a 22 mm pipe with 25 mm foam insulation at ΔT = 55 °C this gives
@@ -27,9 +27,9 @@ export type Derivatives = {
  * values of 8–19 W/m across 22–76 mm pipe diameters.
  */
 export function pipeResistancePerMeter(insulation_mm: number): number {
-  const t_ins  = insulation_mm / 1000;          // mm -> m
-  const r_out  = PIPE_R_OUTER + t_ins;
-  const R_ins  = Math.log(r_out / PIPE_R_OUTER) / (2 * Math.PI * K_INSULATION);
+  const t_ins = insulation_mm / 1000;          // mm -> m
+  const r_out = PIPE_R_OUTER + t_ins;
+  const R_ins = Math.log(r_out / PIPE_R_OUTER) / (2 * Math.PI * K_INSULATION);
   const R_conv = 1 / (2 * Math.PI * r_out * H_PIPE_SURFACE);
   return R_ins + R_conv;
 }
@@ -40,15 +40,15 @@ export function pipeResistancePerMeter(insulation_mm: number): number {
  *
  *   G(t) = G_peak · max(0, sin(π · (h - h_rise) / daylight_hours))
  *
- * where h         = hour of day  = (t_start_hour + t / 3600) % 24
- *       h_rise    = 12 - daylight_hours / 2  (sunrise, noon fixed at 12:00)
+ * where h = hour of day = (t_start_hour + t / 3600) % 24
+ *       h_rise = 12 - daylight_hours / 2  (sunrise, noon fixed at 12:00)
  *
  * The modulo ensures the curve repeats every 24 h, enabling multi-day runs.
  */
 export function computeSolarG(t: number, p: Params): number {
   const h = (p.t_start_hour + t / 3600) % 24;
   const h_rise = 12 - p.daylight_hours / 2;
-  const h_set  = 12 + p.daylight_hours / 2;
+  const h_set = 12 + p.daylight_hours / 2;
   if (h <= h_rise || h >= h_set) return 0;
   return p.G_peak * Math.sin(Math.PI * (h - h_rise) / p.daylight_hours);
 }
@@ -82,7 +82,7 @@ export function stepDerivatives(state: State, p: Params): Derivatives {
   let T_in_panel: number;
   if (m_dot > 0 && UA_leg > 0) {
     const NTU_leg = UA_leg / Math.max(C_dot, EPS);
-    const atten   = Math.exp(-NTU_leg);                // fraction preserved
+    const atten = Math.exp(-NTU_leg);                // fraction preserved
     T_in_panel = T_env + (T_tank - T_env) * atten;     // cool toward T_env
   } else {
     T_in_panel = T_tank; // no advection -> no pipe cooling
@@ -94,13 +94,13 @@ export function stepDerivatives(state: State, p: Params): Derivatives {
     : 0.0;
 
   const T_out_panel = T_in_panel + epsilon_pf * (T_panel - T_in_panel);
-  const Q_to_fluid  = m_dot * c_w * (T_out_panel - T_in_panel); // W (panel -> fluid)
+  const Q_to_fluid = m_dot * c_w * (T_out_panel - T_in_panel); // W (panel -> fluid)
 
   // -- Panel -> Tank leg: attenuate toward ambient only when there is flow --
   let T_in_tank: number;
   if (m_dot > 0 && UA_leg > 0) {
     const NTU_leg = UA_leg / Math.max(C_dot, EPS);
-    const atten   = Math.exp(-NTU_leg);
+    const atten = Math.exp(-NTU_leg);
     T_in_tank = T_env + (T_out_panel - T_env) * atten;
   } else {
     T_in_tank = T_out_panel;

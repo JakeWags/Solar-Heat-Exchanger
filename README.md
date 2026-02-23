@@ -98,7 +98,7 @@ The absorber plate accumulates energy from solar radiation, loses heat to the en
 
 $$
 C_\text{panel} \, \frac{dT_\text{panel}}{dt}
-  = \underbrace{\alpha \, A_p \, G}_{\text{solar absorbed}}
+ = \underbrace{\alpha \, A_p \, G}_{\text{solar absorbed}}
   \-\ \underbrace{U_{\text{loss},p} \, A_p \,(T_\text{panel} - T_\text{env})}_{\text{convective + radiative loss}}
   \-\ \underbrace{Q_\text{to fluid}}_{\text{heat extracted by fluid}}
 $$
@@ -158,7 +158,7 @@ The storage tank receives energy from the hot fluid return (at $T_\text{in,tank}
 
 $$
 C_\text{tank} \, \frac{dT_\text{tank}}{dt}
-  = \dot{m} \, c_w \,(T_\text{in,tank} - T_\text{tank})
+ = \dot{m} \, c_w \,(T_\text{in,tank} - T_\text{tank})
   \-\ UA_\text{tank}\,(T_\text{tank} - T_\text{env})
 $$
 

@@ -24,12 +24,12 @@ export class SnapshotStore {
   private _cap: number;
 
   constructor(initialCapacity = CHUNK_SIZE) {
-    this._cap     = initialCapacity;
-    this._t       = new Float32Array(initialCapacity);
+    this._cap = initialCapacity;
+    this._t = new Float32Array(initialCapacity);
     this._T_panel = new Float32Array(initialCapacity);
-    this._T_tank  = new Float32Array(initialCapacity);
-    this._T_out   = new Float32Array(initialCapacity);
-    this._G       = new Float32Array(initialCapacity);
+    this._T_tank = new Float32Array(initialCapacity);
+    this._T_out = new Float32Array(initialCapacity);
+    this._G = new Float32Array(initialCapacity);
   }
 
   get length(): number { return this._len; }
@@ -37,11 +37,11 @@ export class SnapshotStore {
   push(t: number, T_panel: number, T_tank: number, T_out: number, G: number): void {
     if (this._len === this._cap) this._grow();
     const i = this._len++;
-    this._t[i]       = t;
+    this._t[i] = t;
     this._T_panel[i] = T_panel;
-    this._T_tank[i]  = T_tank;
-    this._T_out[i]   = T_out;
-    this._G[i]       = G;
+    this._T_tank[i] = T_tank;
+    this._T_out[i] = T_out;
+    this._G[i] = G;
   }
 
   /** O(1) views into live data — no copy. */
@@ -73,11 +73,11 @@ export class SnapshotStore {
       next.set(old);
       return next;
     };
-    this._t       = grow(this._t);
+    this._t = grow(this._t);
     this._T_panel = grow(this._T_panel);
-    this._T_tank  = grow(this._T_tank);
-    this._T_out   = grow(this._T_out);
-    this._G       = grow(this._G);
-    this._cap     = newCap;
+    this._T_tank = grow(this._T_tank);
+    this._T_out = grow(this._T_out);
+    this._G = grow(this._G);
+    this._cap = newCap;
   }
 }

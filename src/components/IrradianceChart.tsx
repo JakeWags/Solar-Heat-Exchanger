@@ -45,7 +45,7 @@ function buildSpec(width: number, height: number, xTitle: string): Visualization
 }
 
 function buildRows(t_arr: Float32Array, G_arr: Float32Array, divisor: number): Row[] {
-  const n   = t_arr.length;
+  const n = t_arr.length;
   const pts = new Array<[number, number]>(n);
   for (let i = 0; i < n; i++) pts[i] = [t_arr[i] / divisor, G_arr[i]];
   return (LTTB(pts, DOWNSAMPLE_THRESHOLD) as [number, number][]).map(
@@ -54,11 +54,11 @@ function buildRows(t_arr: Float32Array, G_arr: Float32Array, divisor: number): R
 }
 
 export default function IrradianceChart({ width = 640, height = 180 }: Props) {
-  const containerRef  = useRef<HTMLDivElement>(null);
-  const vegaRef       = useRef<Awaited<ReturnType<typeof embed>> | null>(null);
-  const unitRef       = useRef<TimeUnit>('min');
+  const containerRef = useRef<HTMLDivElement>(null);
+  const vegaRef = useRef<Awaited<ReturnType<typeof embed>> | null>(null);
+  const unitRef = useRef<TimeUnit>('min');
   const lastRebuildAt = useRef<number>(0);
-  const renderTick    = useSimStore((s) => s.renderTick);
+  const renderTick = useSimStore((s) => s.renderTick);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -74,13 +74,13 @@ export default function IrradianceChart({ width = 640, height = 180 }: Props) {
     const ss = useSimStore.getState().snapshots;
     if (!vegaRef.current || ss.length === 0) return;
 
-    const t_arr   = ss.t;
-    const maxT    = t_arr[ss.length - 1];
+    const t_arr = ss.t;
+    const maxT = t_arr[ss.length - 1];
     const newUnit = getTimeUnit(maxT);
     const divisor = DIVISOR[newUnit];
 
     if (newUnit !== unitRef.current) {
-      unitRef.current       = newUnit;
+      unitRef.current = newUnit;
       vegaRef.current.finalize();
       vegaRef.current = null;
       if (containerRef.current) {
@@ -102,7 +102,7 @@ export default function IrradianceChart({ width = 640, height = 180 }: Props) {
     }
 
     // O(1) incremental insert for the hot path
-    const i  = ss.length - 1;
+    const i = ss.length - 1;
     const cs = vega.changeset().insert([{ t: +(t_arr[i] / divisor).toFixed(4), G: +ss.G[i].toFixed(1) }]);
     vegaRef.current.view.change('table', cs).run();
 

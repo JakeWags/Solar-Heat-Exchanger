@@ -172,7 +172,7 @@ describe('computeSolarG', () => {
     const t_noon = (12 - 6) * 3600;
     const delta = 2 * 3600; // 2 h either side of noon
     const G_before = computeSolarG(t_noon - delta, solar());
-    const G_after  = computeSolarG(t_noon + delta, solar());
+    const G_after = computeSolarG(t_noon + delta, solar());
     expect(G_before).toBeCloseTo(G_after, 8);
   });
 
@@ -204,7 +204,7 @@ describe('computeSolarG', () => {
 
 describe('ε–NTU panel heat pickup', () => {
   const T_panel = 70;
-  const T_tank  = 30;
+  const T_tank = 30;
 
   const p = makeParams({
     T_env: 20,
@@ -220,7 +220,7 @@ describe('ε–NTU panel heat pickup', () => {
 
   it('computes T_out_panel correctly via ε = 1–exp(–NTU)', () => {
     const C_dot = p.m_dot * p.c_w;
-    const eps   = 1 - Math.exp(-p.UA_pf / C_dot);
+    const eps = 1 - Math.exp(-p.UA_pf / C_dot);
     const T_out_expected = T_tank + eps * (T_panel - T_tank);
 
     const { T_out_panel } = stepDerivatives(state, p);
@@ -294,9 +294,9 @@ describe('plug-flow pipe attenuation', () => {
     });
     const s = nightState({ T_panel: T_tank, T_tank });
 
-    const Rm    = pipeResistancePerMeter(0);
+    const Rm = pipeResistancePerMeter(0);
     const UA_leg = (10 / 2) / Rm;
-    const C_dot  = 0.05 * 4181;
+    const C_dot = 0.05 * 4181;
     const T_in_expected = T_env + (T_tank - T_env) * Math.exp(-UA_leg / C_dot);
 
     const { T_out_panel } = stepDerivatives(s, p);
@@ -368,8 +368,8 @@ describe('panel energy balance (dT_panel)', () => {
     const s = nightState({ T_panel, T_tank });
     const d = stepDerivatives(s, p);
 
-    const Q_solar  = 0; // G=0
-    const Q_loss   = p.U_loss_p * p.A_p * (T_panel - p.T_env);
+    const Q_solar = 0; // G=0
+    const Q_loss = p.U_loss_p * p.A_p * (T_panel - p.T_env);
     const dT_expected = (Q_solar - Q_loss - d.Q_to_fluid) / p.C_panel;
 
     expect(d.dT_panel).toBeCloseTo(dT_expected, 8);
@@ -504,7 +504,7 @@ describe('energy accounting consistency (pipe_length_total = 0)', () => {
 
     const C_tank = p.rho * p.c_w * p.V_tank;
     // With no pipe loss: Q delivered to tank = Q_to_fluid
-    const Q_tank_in  = p.m_dot * p.c_w * (d.T_out_panel - T_tank); // = Q_to_fluid
+    const Q_tank_in = p.m_dot * p.c_w * (d.T_out_panel - T_tank); // = Q_to_fluid
     const Q_tank_out = p.UA_tank * (T_tank - p.T_env);
     const dT_tank_expected = (Q_tank_in - Q_tank_out) / C_tank;
 

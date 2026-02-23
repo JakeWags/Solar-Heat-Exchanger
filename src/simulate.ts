@@ -12,21 +12,21 @@ export function rk4Step(state: State, p: Params): { next: State; T_out_panel: nu
 
   const k1 = stepDerivatives(state, p);
 
-  _s2.T_panel   = T_panel + 0.5 * dt * k1.dT_panel;
-  _s2.T_tank    = T_tank  + 0.5 * dt * k1.dT_tank;
-  _s2.t         = t;
+  _s2.T_panel = T_panel + 0.5 * dt * k1.dT_panel;
+  _s2.T_tank = T_tank  + 0.5 * dt * k1.dT_tank;
+  _s2.t = t;
   _s2.E_harvest = E_harvest;
   const k2 = stepDerivatives(_s2, p);
 
-  _s3.T_panel   = T_panel + 0.5 * dt * k2.dT_panel;
-  _s3.T_tank    = T_tank  + 0.5 * dt * k2.dT_tank;
-  _s3.t         = t;
+  _s3.T_panel = T_panel + 0.5 * dt * k2.dT_panel;
+  _s3.T_tank = T_tank  + 0.5 * dt * k2.dT_tank;
+  _s3.t = t;
   _s3.E_harvest = E_harvest;
   const k3 = stepDerivatives(_s3, p);
 
-  _s4.T_panel   = T_panel + dt * k3.dT_panel;
-  _s4.T_tank    = T_tank  + dt * k3.dT_tank;
-  _s4.t         = t;
+  _s4.T_panel = T_panel + dt * k3.dT_panel;
+  _s4.T_tank = T_tank  + dt * k3.dT_tank;
+  _s4.t = t;
   _s4.E_harvest = E_harvest;
   const k4 = stepDerivatives(_s4, p);
 

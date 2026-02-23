@@ -14,6 +14,7 @@ import TempChart from './components/TempChart';
 import IrradianceChart from './components/IrradianceChart';
 import Controls from './components/Controls';
 import StatusBar from './components/StatusBar';
+import SceneView from './components/SceneView';
 
 export default function App() {
   useSimLoop();
@@ -57,6 +58,13 @@ export default function App() {
       <AppShell.Main>
         <Stack gap="md">
           <StatusBar />
+
+          <Paper p="md" radius="md" withBorder>
+            <Text size="sm" fw={600} mb="xs">
+              3D Schematic
+            </Text>
+            <SceneView />
+          </Paper>
 
           <Paper p="md" radius="md" withBorder>
             <Text size="sm" fw={600} mb="xs">
