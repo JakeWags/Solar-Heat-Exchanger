@@ -116,7 +116,7 @@ where
 
 ### 2. Pipe heat losses
 
-Each of the two connecting legs (tank→panel and panel→tank) is treated as a **plug-flow pipe** losing heat through a distributed cylindrical resistance to the surrounding air. The 1-D steady-state energy balance on the fluid element is:
+Each of the two connecting legs (tank->panel and panel->tank) is treated as a **plug-flow pipe** losing heat through a distributed cylindrical resistance to the surrounding air. The 1-D steady-state energy balance on the fluid element is:
 
 $$
 \dot{C} \, \frac{dT}{dx} = -\frac{T(x) - T_\text{env}}{R_m}

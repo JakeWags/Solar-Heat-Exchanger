@@ -1,6 +1,6 @@
 import { Group, Paper, Stack, Text } from '@mantine/core';
 import { useSimStore } from '../store';
-import { computeSolarG } from '../physics';
+import { computeSolarG } from '../solar';
 
 function Stat({ label, value, unit }: { label: string; value: string; unit: string }) {
   return (

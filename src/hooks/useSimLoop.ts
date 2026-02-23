@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useSimStore } from '../store';
 import { rk4Step } from '../simulate';
-import { computeSolarG } from '../physics';
+import { computeSolarG } from '../solar';
 
 /** Chart redraws are throttled to this interval (ms) to avoid Vega flooding. */
 const CHART_FPS_MS = 100; // ~10 fps

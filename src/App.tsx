@@ -60,13 +60,10 @@ export default function App() {
           <StatusBar />
 
           <Paper p="md" radius="md" withBorder>
-            <Text size="sm" fw={600} mb="xs">
-              3D Schematic
-            </Text>
             <SceneView />
           </Paper>
 
-          <Paper p="md" radius="md" withBorder>
+          {/* <Paper p="md" radius="md" withBorder>
             <Text size="sm" fw={600} mb="xs">
               Temperature Traces
             </Text>
@@ -78,7 +75,7 @@ export default function App() {
               Solar Irradiance
             </Text>
             <IrradianceChart />
-          </Paper>
+          </Paper> */}
         </Stack>
       </AppShell.Main>
     </AppShell>

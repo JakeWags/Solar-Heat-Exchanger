@@ -9,9 +9,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   pipeResistancePerMeter,
-  computeSolarG,
   stepDerivatives,
 } from '../physics';
+import { computeSolarG } from '../solar';
 import type { Params, State } from '../types';
 
 // ---------------------------------------------------------------------------
@@ -25,7 +25,7 @@ function makeParams(overrides: Partial<Params> = {}): Params {
     T_env: 20,
     G_peak: 1000,
     alpha: 0.9,
-    // Solar time (default: sim starts at midnight, 12 h day → G=0 before 6 am)
+    // Solar time (default: sim starts at midnight, 12 h day -> G=0 before 6 am)
     t_start_hour: 0,
     daylight_hours: 12,
     // Panel
@@ -41,7 +41,7 @@ function makeParams(overrides: Partial<Params> = {}): Params {
     rho: 997,
     c_w: 4181,
     // Pipe
-    pipe_length_total: 0,      // zero by default → no pipe loss
+    pipe_length_total: 0,      // zero by default -> no pipe loss
     pipe_insulation_mm: 25,
     // Integrator
     dt: 0.25,
@@ -80,7 +80,7 @@ describe('pipeResistancePerMeter', () => {
   });
 
   it('matches the cylindrical-shell formula for 25 mm insulation', () => {
-    // R_m ≈ 5.157 K·m/W  →  heat-loss ≈ 10.66 W/m at ΔT = 55 °C
+    // R_m ≈ 5.157 K·m/W  ->  heat-loss ≈ 10.66 W/m at ΔT = 55 °C
     expect(pipeResistancePerMeter(25)).toBeCloseTo(expectedR(25), 6);
   });
 
@@ -119,12 +119,12 @@ describe('computeSolarG', () => {
     makeParams({ t_start_hour: 6, daylight_hours: 12, G_peak: 1000, ...overrides });
 
   it('returns 0 at exactly sunrise (h = h_rise)', () => {
-    // h(0) = 6 = h_rise → sin(0) = 0
+    // h(0) = 6 = h_rise -> sin(0) = 0
     expect(computeSolarG(0, solar())).toBeCloseTo(0, 10);
   });
 
   it('returns 0 strictly before sunrise', () => {
-    // t_start_hour=4 → h(0)=4 < h_rise(6)
+    // t_start_hour=4 -> h(0)=4 < h_rise(6)
     expect(computeSolarG(0, solar({ t_start_hour: 4 }))).toBe(0);
   });
 
@@ -140,7 +140,7 @@ describe('computeSolarG', () => {
   });
 
   it('returns 0 at exactly sunset (h = h_set)', () => {
-    // h(43200) = 6 + 12 = 18 = h_set → condition h >= h_set is true
+    // h(43200) = 6 + 12 = 18 = h_set -> condition h >= h_set is true
     const t_sunset = 12 * 3600;
     expect(computeSolarG(t_sunset, solar())).toBe(0);
   });
@@ -188,7 +188,7 @@ describe('computeSolarG', () => {
     const p8 = solar({ t_start_hour: 8, daylight_hours: 8, G_peak: 800 });
     const t_noon8 = (12 - 8) * 3600; // 4 h after start
     expect(computeSolarG(t_noon8, p8)).toBeCloseTo(800, 6);
-    // Before sunrise: t=0, h=8=h_rise → G=0
+    // Before sunrise: t=0, h=8=h_rise -> G=0
     expect(computeSolarG(0, p8)).toBeCloseTo(0, 10);
   });
 });
@@ -197,7 +197,7 @@ describe('computeSolarG', () => {
 // 3. ε–NTU panel heat pickup
 // ---------------------------------------------------------------------------
 // Tested through stepDerivatives with pipe_length_total=0 (no pipe loss) and
-// t=0 with t_start_hour=0, daylight_hours=12 (h=0 < h_rise=6 → G=0).
+// t=0 with t_start_hour=0, daylight_hours=12 (h=0 < h_rise=6 -> G=0).
 // With these conditions T_in_panel = T_tank and the only active formula is:
 //   ε = 1 – exp(–UA_pf / C_dot)
 //   T_out_panel = T_in + ε·(T_panel – T_in)
@@ -212,7 +212,7 @@ describe('ε–NTU panel heat pickup', () => {
     c_w: 4181,
     UA_pf: 120,
     pipe_length_total: 0,  // isolates ε–NTU from pipe attenuation
-    t_start_hour: 0,       // h(t=0)=0 < h_rise=6 → G=0
+    t_start_hour: 0,       // h(t=0)=0 < h_rise=6 -> G=0
     daylight_hours: 12,
   });
 
@@ -239,7 +239,7 @@ describe('ε–NTU panel heat pickup', () => {
     expect(T_out_panel).toBeLessThan(T_panel);
   });
 
-  it('approaches T_panel when UA_pf is very large (ε → 1)', () => {
+  it('approaches T_panel when UA_pf is very large (ε -> 1)', () => {
     const { T_out_panel } = stepDerivatives(state, makeParams({ UA_pf: 1e9, pipe_length_total: 0 }));
     expect(T_out_panel).toBeCloseTo(T_panel, 4);
   });
@@ -281,14 +281,14 @@ describe('plug-flow pipe attenuation', () => {
     expect(T_out_panel).toBeCloseTo(60, 10);
   });
 
-  it('attenuates fluid temperature toward T_env along the tank→panel leg', () => {
+  it('attenuates fluid temperature toward T_env along the tank->panel leg', () => {
     const T_tank = 60, T_env = 20;
     // Use zero insulation to maximise the effect (lowest R_m = convection only)
     const p = makeParams({
       T_env,
       m_dot: 0.05,
       c_w: 4181,
-      UA_pf: 0,                // no panel pickup → T_out_panel = T_in_panel
+      UA_pf: 0,                // no panel pickup -> T_out_panel = T_in_panel
       pipe_length_total: 10,   // L_leg = 5 m
       pipe_insulation_mm: 0,   // maximum heat loss (convection-only insulation)
     });
@@ -347,7 +347,7 @@ describe('plug-flow pipe attenuation', () => {
 describe('panel energy balance (dT_panel)', () => {
   it('dT_panel = 0 when panel is at ambient with no solar and no flow', () => {
     const p = makeParams({ T_env: 20, m_dot: 0 });
-    // G=0 (h=0 < h_rise=6), T_panel=T_env → Q_solar=Q_loss=Q_fluid=0
+    // G=0 (h=0 < h_rise=6), T_panel=T_env -> Q_solar=Q_loss=Q_fluid=0
     const { dT_panel } = stepDerivatives(nightState({ T_panel: 20, T_tank: 20 }), p);
     expect(dT_panel).toBeCloseTo(0, 10);
   });
@@ -383,7 +383,7 @@ describe('panel energy balance (dT_panel)', () => {
       G_peak: 1000,
       alpha: 0.9,
       T_env: 20,
-      m_dot: 0,          // no fluid → all solar goes into panel
+      m_dot: 0,          // no fluid -> all solar goes into panel
       pipe_length_total: 0,
     });
     const t_noon = (12 - 6) * 3600;

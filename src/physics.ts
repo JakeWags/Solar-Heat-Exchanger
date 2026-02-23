@@ -1,4 +1,5 @@
 import type { Params, State } from './types';
+import { computeSolarG } from './solar';
 
 const EPS = 1e-9;
 
@@ -34,24 +35,6 @@ export function pipeResistancePerMeter(insulation_mm: number): number {
   return R_ins + R_conv;
 }
 
-/**
- * Returns solar irradiance in W/m² for simulation time t (seconds).
- * Uses a half-sine bell curve centred on solar noon, zero outside daylight hours.
- *
- *   G(t) = G_peak · max(0, sin(π · (h - h_rise) / daylight_hours))
- *
- * where h = hour of day = (t_start_hour + t / 3600) % 24
- *       h_rise = 12 - daylight_hours / 2  (sunrise, noon fixed at 12:00)
- *
- * The modulo ensures the curve repeats every 24 h, enabling multi-day runs.
- */
-export function computeSolarG(t: number, p: Params): number {
-  const h = (p.t_start_hour + t / 3600) % 24;
-  const h_rise = 12 - p.daylight_hours / 2;
-  const h_set = 12 + p.daylight_hours / 2;
-  if (h <= h_rise || h >= h_set) return 0;
-  return p.G_peak * Math.sin(Math.PI * (h - h_rise) / p.daylight_hours);
-}
 
 
 export function stepDerivatives(state: State, p: Params): Derivatives {
