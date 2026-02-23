@@ -67,8 +67,7 @@ export default function IrradianceChart({ width = 640, height = 180 }: Props) {
     }).then(res => { vegaRef.current = res; });
 
     return () => { vegaRef.current?.finalize(); vegaRef.current = null; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [width, height]);
 
   useEffect(() => {
     const ss = useSimStore.getState().snapshots;

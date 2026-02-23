@@ -2,12 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
-import { ActionIcon, Box, ScrollArea, Stack, Text, Tooltip } from '@mantine/core';
+import { Box } from '@mantine/core';
 import { useSimStore } from '../store';
 import { computeSolar } from '../solar';
 import type { Params, State } from '../types';
-import TempChart from './TempChart';
-import IrradianceChart from './IrradianceChart';
+import ChartSidebar from './ChartSidebar';
 
 // --- Temperature -> diffuse colour ---------------------------------------------
 // Gradient: cold (15 °C) steel-blue -> warm (52 °C) amber -> hot (90 °C) crimson
@@ -407,13 +406,10 @@ function buildScene(canvas: HTMLCanvasElement, container: HTMLDivElement, w: num
 
 // --- React component ----------------------------------------------------------
 
-const SIDEBAR_WIDTH = 500;
-
 export default function SceneView() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const handleRef = useRef<SceneHandle | null>(null);
-  const [open, setOpen] = useState(true);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -460,55 +456,9 @@ export default function SceneView() {
           ref={canvasRef}
           style={{ display: 'block', width: '100%', height: '100%' }}
         />
-
-        {/* Toggle button pinned to the right edge of the canvas */}
-        <Tooltip label={open ? 'Hide charts' : 'Show charts'} position="left" withArrow>
-          <ActionIcon
-            onClick={() => setOpen((v) => !v)}
-            variant="filled"
-            color="dark"
-            radius="xl"
-            size="lg"
-            style={{
-              position:  'absolute',
-              right:     8,
-              top:       '50%',
-              transform: 'translateY(-50%)',
-              zIndex:    10,
-              opacity:   0.82,
-            }}
-          >
-            <span style={{ fontSize: 13, lineHeight: 1 }}>{open ? '▶' : '◀'}</span>
-          </ActionIcon>
-        </Tooltip>
       </div>
 
-      {/* ── Sliding chart panel ── */}
-      <div
-        style={{
-          width:      open ? SIDEBAR_WIDTH : 0,
-          minWidth:   0,
-          overflow:   'hidden',
-          transition: 'width 0.25s ease',
-          background: 'rgba(13, 17, 23, 0.94)',
-          backdropFilter: 'blur(6px)',
-          borderLeft: open ? '1px solid #30363d' : 'none',
-          display:    'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <ScrollArea style={{ flex: 1 }} p={0}>
-          <Stack gap={6} p={8} style={{ width: SIDEBAR_WIDTH }}>
-            <Text size="xs" fw={600} c="dimmed" tt="uppercase" style={{ letterSpacing: 1 }}>
-              Live Charts
-            </Text>
-            <Text size="xs" fw={500} c="gray.4">Temperature</Text>
-            <TempChart width={SIDEBAR_WIDTH - 120} height={220} />
-            <Text size="xs" fw={500} c="gray.4">Irradiance</Text>
-            <IrradianceChart width={SIDEBAR_WIDTH - 100} height={220} />
-          </Stack>
-        </ScrollArea>
-      </div>
+      <ChartSidebar />
     </Box>
   );
 }

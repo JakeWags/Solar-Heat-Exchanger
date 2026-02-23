@@ -119,8 +119,7 @@ export default function TempChart({ width = 640, height = 300 }: Props) {
     });
 
     return () => { vegaRef.current?.finalize(); vegaRef.current = null; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [width, height]);
 
   // -- Update ambient line immediately when T_env slider changes -------------
   useEffect(() => {
