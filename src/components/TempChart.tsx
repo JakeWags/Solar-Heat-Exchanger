@@ -169,7 +169,6 @@ export default function TempChart({ width = 640, height = 300 }: Props) {
       return;
     }
 
-    // -- Hot path: O(1) incremental insert of only the latest point --------
     const i = ss.length - 1;
     const t = +(t_arr[i] / divisor).toFixed(4);
     const cs = vega.changeset().insert([
