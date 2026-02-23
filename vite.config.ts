@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/Solar-Heat-Exhcanger/',
+  base: '/Solar-Heat-Exchanger/',
   plugins: [react()],
   test: {
     environment: 'node',
